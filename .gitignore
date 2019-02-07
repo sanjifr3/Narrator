@@ -1,3 +1,11 @@
+# Ignore data files (too large)
+data/processed/coco_captions.csv
+data/processed/coco_2014_captions.csv
+data/processed/coco_2017_captions.csv
+
+# Ignore models
+models/*.pkl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

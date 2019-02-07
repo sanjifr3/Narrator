@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="header" id="myHeader">
+  <h2>Video Description Examples</h2>
+  <p>Click on the buttons to change the grid view.</p>
+  <button class="btn" onclick="one()">1</button>
+  <!-- <button class="btn active" onclick="two()">2</button> -->
+  <button class="btn" onclick="two()">2</button>
+  <button class="btn" onclick="four()">4</button>
+</div>
+
+<!-- Photo Grid -->
+<div class="row">
+  <div class="column">
+    {% for vid in vid_dict[0] %}
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <video width="100%" controls>
+        <source src={{ url_for('get_sample', filename=vid['url']) }} type="video/mp4">
+        Your browser does not support the video tag
+      </video>
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['gt_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%" color="green">{{ vid['gt'] }}</font><br> 
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['cap_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%">{{ vid['caption'] }}</font>
+    </figure>    
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for vid in vid_dict[1] %}
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <video width="100%" controls>
+        <source src={{ url_for('get_sample', filename=vid['url']) }} type="video/mp4">
+        Your browser does not support the video tag
+      </video>
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['gt_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%" color="green">{{ vid['gt'] }}</font><br> 
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['cap_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%">{{ vid['caption'] }}</font>
+    </figure> 
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for vid in vid_dict[2] %}
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <video width="100%" controls>
+        <source src={{ url_for('get_sample', filename=vid['url']) }} type="video/mp4">
+        Your browser does not support the video tag
+      </video>
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['gt_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%" color="green">{{ vid['gt'] }}</font><br> 
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['cap_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%">{{ vid['caption'] }}</font>
+    </figure> 
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for vid in vid_dict[3] %}
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <video width="100%" controls>
+        <source src={{ url_for('get_sample', filename=vid['url']) }} type="video/mp4">
+        Your browser does not support the video tag
+      </video>
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['gt_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%" color="green">{{ vid['gt'] }}</font><br> 
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('get_sample', filename=vid['cap_audio']) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="2.5%">{{ vid['caption'] }}</font>
+    </figure> 
+    {% endfor %}
+  </div> 
+</div>
+
+{% endblock %}

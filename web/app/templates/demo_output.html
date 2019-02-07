@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<body>
+
+<!-- Upload Form -->
+<div class='container'>
+  <div class="starter-template">
+  <h2>Demo</h2>
+  <h4>Upload image or video</h4>
+  <p><b>Note</b>: Only supports .mp4 videos for playback</p>
+  <br>
+  <form action="" method=post enctype=multipart/form-data>
+    <div style="text-align:center;">
+    <input type=file name=file>
+    <br>
+    <input type=submit value=Upload>
+  </form>
+</div>
+
+<!-- Results -->
+<div class='container'>
+  <div class="starter-template">
+    {% if filename %}
+      <audio controls style="height: 25px; width: 200px;">
+         <source src="{{ url_for('send_file', filename=cap_audio) }}" type="audio/ogg">
+         Your browser does not support the audio element.
+      </audio><br>
+      <font size="4%">{{ caption }}</font><br>
+      <figure>
+      {% if typ == "image" %}
+        <div style="width:image width px; text-align:center;">
+        <img src={{ url_for('send_file', filename=filename) }} style="width:50%">
+      {% else %}
+        <video width="80%" controls>
+          <source src={{ url_for('send_file', filename=filename) }} type="video/mp4">
+          Your browser does not support the video tag
+        </video>
+      {% endif %}
+      </figure>
+    <h1></h1>
+    {% else %}
+    <h4>Upload image to generate caption!</h4>
+    {% endif %}  
+  </div>
+</div>
+
+</body>
+
+{% endblock %}
