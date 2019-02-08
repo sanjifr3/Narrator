@@ -9,15 +9,15 @@ class ImageCaptioner(nn.Module):
     def __init__(self, im_embedding_size, embed_size,
                  hidden_size, vocab_size,
                  max_caption_length=35, start_id=1, end_id=2,
-                 num_layers=1, dropout_prob=0.2, 
+                 num_layers=1, dropout_prob=0.2,
                  rnn_type='lstm', rnn_dropout_prob=0.2):
         """
-        Constructs the ImageCaptioner CNN-RNN Neural network
+        Constructs the ImageCaptioner CNN-RNN
 
         Args:
             im_embedding_size: Size of the image embedding
                 from the CNN
-            embed_size: 
+            embed_size:
             param2: This is the second param
 
         Returns:
@@ -40,7 +40,7 @@ class ImageCaptioner(nn.Module):
         else:
             rnn_type = nn.GRU
 
-        # Layers for preprocessing image
+        # Layers for preprocessing image embedding
         self.inp = nn.Linear(im_embedding_size, embed_size)
         self.inp_dropout = nn.Dropout(dropout_prob)
         self.inp_bn = nn.BatchNorm1d(embed_size, momentum=0.01)
@@ -163,7 +163,7 @@ class ImageCaptioner(nn.Module):
             return captions
 
     def beam_search(self, output, hidden=None,
-                   return_probs=False, beam_size=10, topK=1):
+                    return_probs=False, beam_size=10, topK=1):
         # Storage vector to store results
         if return_probs:
             idx_sequences = [[[], 0.0, output, hidden,
