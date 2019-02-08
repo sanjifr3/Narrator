@@ -11,13 +11,9 @@ from PIL import Image
 import cv2
 import torch
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
-
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
-
-sys.path.append(dir_name + '/../models/')
-from YOLOObjectDetectorV2 import YOLOObjectDetector
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(DIR_NAME + '/../')
+from models.YOLOObjectDetector import YOLOObjectDetector
 
 def main(args):
     yolo = YOLOObjectDetector(model_name=args.model)

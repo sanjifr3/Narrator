@@ -4,29 +4,27 @@ COCO Dataset Torch Dataloader and Dataset implementions
 get_image_dataloader creates a dataloader with a 
 new coco dataset with the specified parameters
 """
-
-import pandas as pd
+from __future__ import print_function
+import os
+import sys
+import ast
 import pickle
+from random import shuffle
 import numpy as np
-from torch.utils.data import Dataset, sampler, DataLoader
-import torch.utils.data as data
+import pandas as pd
+import cv2
+import PIL
 import nltk
 import torch
-import sys
-import os
-import ast
-from random import shuffle
-import PIL
+from torch.utils.data import Dataset, sampler, DataLoader
 
-# Add relative paths so libraries can be imported
-dir_name = os.path.dirname(os.path.realpath(__file__))
-
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
+from create_transformer import create_transformer
 from Vocabulary import Vocabulary
 
-sys.path.append(dir_name + '/../models/')
-from EncoderCNN import EncoderCNN
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append('/../')
+
+from models.EncoderCNN import EncoderCNN
 
 def get_image_dataloader(mode='train',
                         coco_set=2014,
@@ -67,7 +65,7 @@ def get_image_dataloader(mode='train',
     # Ensure that specified mode is valid
     try:
         assert(mode in ['train','val','test'])
-        assert(year in [2014,2017])
+        assert(coco_set in [2014,2017])
         assert(os.path.exists(images_path))
         assert(os.path.exists(vocab_path))
         assert(os.path.exists(caption_path))
@@ -76,15 +74,15 @@ def get_image_dataloader(mode='train',
         if mode not in ['train','val','test']:
             print ("Invalid mode specified: {}. Defaulting to val mode".format(mode))
             mode = 'val'
-        if mode not in [2014,2017]:
-            print ("Invalid coco year specified: {}. Defaulting to 2014".format(mode))
+        if coco_set not in [2014,2017]:
+            print ("Invalid coco year specified: {}. Defaulting to 2014".format(coco_set))
             year = 2014
 
         # Terminating conditions
         if not os.path.exists(images_path):
             print (images_path + " does not exist!")
             return None
-        elif not os.path.exist(vocab_path):
+        elif not os.path.exists(vocab_path):
             print (vocab_path + " does not exist!")
         elif not os.path.exists(caption_path):
             print (caption_path + " does not exist!")
@@ -229,7 +227,7 @@ class ImageDataset(Dataset):
         self.model = model
 
         if not load_features:
-            self.transformer = createTransformer()
+            self.transformer = create_transformer()
             self.encoder = EncoderCNN(model)
         
             # Move to gpu if available

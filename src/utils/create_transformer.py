@@ -138,7 +138,7 @@ class Pad(object):
         return self.__class__.__name__ + '(padding={0}, fill={1}, padding_mode={2})'.\
             format(self.padding, self.fill, self.padding_mode)
 
-def createTransformer(augment=False):
+def create_transformer(augment=False):
   if not augment:
     return transforms.Compose([
         Resize(224,resize_larger_edge=True), # Resize larger edge to 224
@@ -157,7 +157,7 @@ def createTransformer(augment=False):
                            (0.229, 0.224, 0.225))
       ])
 
-def createYoloTransformer(dim):
+def create_yolo_transformer(dim):
     return transforms.Compose([
         Resize(dim,resize_larger_edge=True), # Resize larger edge to dim
         Pad(dim, fill=(128,128,128)), # Pad smaller edge to dim

@@ -1,5 +1,7 @@
 """
+A PyTorch CNN model wrapper
 
+Wraps a pre-trained CNN network
 """
 from __future__ import print_function
 import torch
@@ -9,7 +11,11 @@ import torchvision.models as models
 
 class EncoderCNN(nn.Module):
     """
+    A PyTorch CNN model wrapper
+
+    This class inherits form the torch.nn.Module class
     """
+
     base_model_options = ['resnet18', 'resnet50', 'resnet152',
                           'vgg11', 'vgg11_bn', 'vgg16', 'vgg16_bn',
                           'vgg19', 'vgg19_bn', 'squeezenet0', 'squeezenet1',
@@ -17,6 +23,12 @@ class EncoderCNN(nn.Module):
 
     def __init__(self, base_model='vgg'):
         """
+        Constructs the EncoderCNN class
+
+        Args:
+            base_model: Base CNN model to use
+        Returns;
+            A PyTorch network model
 
         """
         super(EncoderCNN, self).__init__()
@@ -25,7 +37,7 @@ class EncoderCNN(nn.Module):
             assert base_model in self.base_model_options
         except AssertionError:
             print('Invalid base model: %s'.format(base_model))
-            print(' -- Valid types: ',self.base_model_options)
+            print(' -- Valid types: ', self.base_model_options)
             return
 
         # Load selected base model with pre-trained weights
@@ -68,6 +80,16 @@ class EncoderCNN(nn.Module):
         self.bm = nn.Sequential(*modules)
 
     def forward(self, images):
+        """
+        Compute the forward pass of the network
+
+        Args:
+            images: Image Tensor
+
+        Returns:
+            Image embeddings from second last layer of base network
+        """
+
         with torch.no_grad():
             features = self.bm(images)
         return features.view(features.size(0), -1)

@@ -1,18 +1,19 @@
+"""
+Simple wrapper for the pytorch implementation from:
+https://github.com/ayooshkathuria/pytorch-yolo-v3
+"""
 from __future__ import division, print_function
 import sys
 import os
+import pickle
 import numpy as np
 import cv2
 
 import torch
 from torch.autograd import Variable
-import pickle
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createYoloTransformer
-
-sys.path.append(dir_name + '/pytorch-yolo-v3')
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(DIR_NAME + '/pytorch-yolo-v3')
 from util import load_classes, write_results
 from darknet import Darknet
 
@@ -20,30 +21,42 @@ from darknet import Darknet
 class YOLOObjectDetector(object):
     """
     Simple wrapper class for pytorch yolov3 implementation from:
-    https://github.com/ayooshkathuria/pytorch-yolo-v3
+      https://github.com/ayooshkathuria/pytorch-yolo-v3
     """
 
     def __init__(self, darknet_path=os.environ['HOME'] + '/programs/darknet/',
                  model_name='yolov3', dataset='coco', dim=480):
         """
+        Constructs the YOLOObjectDetector class
+
+        Args:
+            darknet_path: Path to darknet
+            model_name: Model to use
+            dataset: Dataset for model
+            dim: Input dimension of YOLO network
+
         """
+        # YOLO file paths
         cfg_file = '%s/cfg/%s.cfg' % (darknet_path, model_name)
         weights_file = '%s/weights/%s.weights' % (darknet_path, model_name)
         classes_file = '%s/data/%s.names' % (darknet_path, dataset)
 
+        # Liad classes
         self.classes = load_classes(classes_file)
         self.np_classes = np.array(self.classes)
         self.colors = pickle.load(
             open(
-                dir_name +
+                DIR_NAME +
                 "/pytorch-yolo-v3/pallete",
                 "rb"))
 
+        # Load model
         print('Loading ' + model_name + ' network')
         self.model = Darknet(cfg_file)
         self.model.load_weights(weights_file)
         print(model_name + ' network loaded successfully')
 
+        # Check dimension to see if its valid
         self.dim = dim
         try:
             assert self.dim % 32 == 0 and self.dim > 32
@@ -53,36 +66,55 @@ class YOLOObjectDetector(object):
             self.dim = int(self.dim / 32) * 32
             print("Moded dimension changed to {}".format(self.dim))
 
+        # Change input size
         self.model.net_info['height'] = self.dim
 
+        # Move to gpu if available
         if torch.cuda.is_available():
             self.model.cuda()
 
+        # Do one pass and set to evaluation mode
         self.model(self.get_test_input(), torch.cuda.is_available())
         self.model.eval()
 
-        self.transformer = createYoloTransformer(self.dim)
         return
 
     def detect(self, im, thresh=0.3, nms_thresh=0.45,
                max_objects=4, draw=False):
-        im, orig_im, dim = self.prep_image(im)
+        """
+        Detects objects in given image
 
+        Args:
+            im: Image
+            thresh: Detection threshold
+            nms: Detection non-max suppression threshold
+            max_objects: Maximum number of objects to return
+            draw: Option to draw results on image
+        Returns:
+            object classes plus details and optionally an
+            image with results drawn
+        """
+        # Preprocess image
+        im, orig_im, dim = self.prep_image(im)
         im_dim = torch.FloatTensor(dim).repeat(1, 2)
 
+        # Move to GPU if available
         if torch.cuda.is_available():
             im_dim = im_dim.cuda()
             im = im.cuda()
 
+        # Compute output
         with torch.no_grad():
             output = self.model(Variable(im), torch.cuda.is_available())
 
+        # Process results
         output = write_results(
             output, thresh, len(
                 self.classes), nms=True, nms_conf=nms_thresh)
 
         classes = []
         if not isinstance(output, int):
+            # Rescale output to original image size
             im_dim = im_dim.repeat(output.size(0), 1)
             scaling_factor = torch.min(self.dim / im_dim, 1)[0].view(-1, 1)
 
@@ -99,9 +131,11 @@ class YOLOObjectDetector(object):
                 output[i, [2, 4]] = torch.clamp(
                     output[i, [2, 4]], 0.0, im_dim[i, 1])
 
+            # Optionally draw on image
             if draw:
                 list(map(lambda x: self.draw(x, orig_im), output))
 
+            # Extract classes, locations, propabilities from output
             if output.size()[0] > 0:
                 if max_objects is not None and output.size()[0] > max_objects:
                     output = output[-max_objects:]
@@ -123,6 +157,7 @@ class YOLOObjectDetector(object):
                 # Change format to: obj_prob, class_prob, xc,yc,w,h
                 output = output[:, [-2, -1, 0, 1, 2, 3]]
 
+                # Pad to max objects size
                 if max_objects is not None and output.size()[0] < max_objects:
                     sz = (4 - output.size()[0], output.size()[1])
                     output = torch.cat((output, torch.zeros(sz).cuda()), 0)
@@ -134,6 +169,7 @@ class YOLOObjectDetector(object):
         return classes, output
 
     def draw(self, x, im):
+        '''Draw object on given image'''
         c1 = tuple(x[1:3].int())
         c2 = tuple(x[3:5].int())
         cls = int(x[-1])
@@ -146,13 +182,9 @@ class YOLOObjectDetector(object):
         cv2.rectangle(im, c1, c2, color, -1)
         cv2.putText(im, label, (c1[0], c1[1] + t_size[1] + 4),
                     cv2.FONT_HERSHEY_PLAIN, 1, [225, 255, 255], 1)
-        return im
 
     def prep_image(self, im):
-        """
-        Prepare image for inputting to the neural network.
-        Returns a Variable
-        """
+        '''Prepare image for inputting into neural network'''
         orig_im = im
         dim = orig_im.shape[1], orig_im.shape[0]
         im = (self.letterbox_image(orig_im))
@@ -175,7 +207,8 @@ class YOLOObjectDetector(object):
         return canvas
 
     def get_test_input(self):
-        im = cv2.imread(dir_name + '/pytorch-yolo-v3/dog-cycle-car.png')
+        '''Get sample test input for network'''
+        im = cv2.imread(DIR_NAME + '/pytorch-yolo-v3/dog-cycle-car.png')
         im = cv2.resize(im, (self.dim, self.dim))
         im_ = im[:, :, ::-1].transpose((2, 0, 1))
         im_ = im_[np.newaxis, :, :, :] / 255.0

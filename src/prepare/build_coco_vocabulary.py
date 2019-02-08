@@ -10,28 +10,28 @@ import pandas as pd
 from collections import Counter
 import os
 
-# Get file directory name
-dir_name = os.path.dirname(os.path.realpath(__file__))
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 
-sys.path.append(dir_name + '/../features/')
+sys.path.append(DIR_NAME + '/../utils/')
 from Vocabulary import Vocabulary
 
-# Turn a Unicode string to plain ASCII, thanks to
-# https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
+    '''Convert unicide string to plain ASCII'''
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn'
     )
 
-# Lowercase, trim, and remove non-letter characters
 def normalizeString(s):
+    '''Lowercase, trim, and remove non-letter characters'''
     s = unicodeToAscii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
 
 def updateCounter(counter, captions):
+    '''Update word counters'''
+    
     # Tokenize and update token counter
     for i, caption in enumerate(captions):
         if i % 1000:

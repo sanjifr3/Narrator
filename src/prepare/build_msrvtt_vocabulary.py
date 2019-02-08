@@ -11,10 +11,10 @@ import pandas as pd
 from collections import Counter
 
 # Get file directory name
-dir_name = os.path.dirname(os.path.realpath(__file__))
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 
-sys.path.append(dir_name + '/../features/')
-from Vocabulary import Vocabulary
+sys.path.append(DIR_NAME + '/../')
+from utils.Vocabulary import Vocabulary
 
 # Turn a Unicode string to plain ASCII, thanks to
 # https://stackoverflow.com/a/518232/2809427

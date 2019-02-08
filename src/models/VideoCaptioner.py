@@ -1,3 +1,8 @@
+"""
+A PyTorch CNN-RNN model for Video Captioning
+
+Based on the Show & Tell Architecture (RNN also used for Encoding frames)
+"""
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -6,6 +11,9 @@ import numpy as np
 
 class VideoCaptioner(nn.Module):
     """
+    A PyTorch CNN-RNN model for Video Captioning.
+
+    This class inherits from the torch.nn.Module class.
     """
 
     def __init__(self, vid_embedding_size, embed_size, hidden_size,
@@ -13,6 +21,23 @@ class VideoCaptioner(nn.Module):
                  end_id=2, num_layers=1, dropout_prob=0.2,
                  rnn_type='lstm', rnn_dropout_prob=0.2):
         """
+        Constructs the VideoCaptioner CNN-RNN
+
+        Args:
+            vid_embedding_size: Size of the vid embedding from the CNN
+            embed_size: Word embedding size
+            hidden_size: Hidden size of RNN
+            vocab_size: Size of vocabulary
+            max_caption_length: Maximum size of a caption
+            start_id: Tag of starting word in vocabulary
+            end_id: Tag of ending word in vocabulary
+            num_layers: Number of layers for RNN
+            dropout_prob: Probability of dropout for image input
+            rnn_type: Type of RNN unit to use
+            rnn_dropout_prob: Dropout probability for RNN (only if num_layers>1)
+
+        Returns:
+            A PyTorch network model
         """
         super(VideoCaptioner, self).__init__()
 
@@ -49,33 +74,51 @@ class VideoCaptioner(nn.Module):
         self.out = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, vid_embeddings, caption_embeddings=None, mode='train'):
+        """
+        Compute the forward pass of the network
+
+        Args:
+            vid_embeddings: Video embeddings from the CNN
+            caption_embeddings: Numerically encoded captions
+
+        Returns:
+            The network probability outputs
+        """
 
         if mode == 'test':
             return self.predict(vid_embeddings)
 
-        batch_size, num_frames, _ = vid_embeddings.size()
-
-        # Prepare videos for passing into first RNN
+        # Prepare videos/caption for passing into first RNN
         vid_embeddings = self.inp(vid_embeddings)
         vid_embeddings = self.inp_dropout(vid_embeddings)
 
-        # Prepare caption for passing into decoding RNN
-        # Drop last as no point inputting <PAD> or <EOS>
-        caption_embeddings = self.embed(caption_embeddings[:, :-1])
+        caption_embeddings = self.embed(caption_embeddings[:, :-1]) # Drop end tag
 
-        # Concatenate image embedding and word embeddings
+        # Join inputs sequentially
         inputs = torch.cat((vid_embeddings, caption_embeddings), 1)
 
         # Pass all through RNNs
         outputs, _ = self.rnn(inputs)
-
-        # Pass through linear output
         outputs = self.out(outputs[:, -self.max_len:])
 
         return outputs
 
     def predict(self, vid_embeddings, return_probs=False,
                 beam_size=None, desired_num_captions=1):
+        """
+        Predicts the captions for the given video embeddings
+
+        Args:
+            vid_embedding: Video embeddings from the CNN
+            return_probs: Option to return probabilities
+            beam_size: Size of beam for beam search
+            desired_num_captions: Top N captions to return
+
+        Returns:
+            The predicted captions, and optionally the output probabilities
+        """
+
+        # Prepare the video for passing through the RNN
         if len(vid_embeddings.size()) == 2:
             batch_size = 1
             vid_embeddings = self.inp(vid_embeddings.unsqueeze(0))
@@ -83,23 +126,28 @@ class VideoCaptioner(nn.Module):
             batch_size, _, _ = vid_embeddings.size()
             vid_embeddings = self.inp(vid_embeddings)
 
+        # Compute captions using the highest probability word recursively
         if not beam_size:
+            # Pass video through network , and initialize storage tensors
             output, hidden = self.rnn(vid_embeddings)
 
             captions = torch.zeros(batch_size, self.max_len)
             captions[:, 0] = self.start_id
+
             if return_probs:
                 probs = torch.zeros(batch_size, self.max_len, self.output_size)
                 probs[:, 0] = self.out(output[:, -1]).squeeze(1).cpu()
 
             word_embedding = captions[:, 0].unsqueeze(1).long()
 
+            # Move tensors to GPU if available
             if torch.cuda.is_available():
                 word_embedding = word_embedding.cuda()
                 captions = captions.cuda()
                 if return_probs:
                     probs = probs.cuda()
 
+            # Recursively pass into RNN the highest probability word
             for i in range(1, self.max_len):
                 word_embedding = self.embed(word_embedding)
                 output, hidden = self.rnn(word_embedding, hidden)
@@ -113,14 +161,18 @@ class VideoCaptioner(nn.Module):
                     captions[:, i] = output.argmax(1)
                     word_embedding = output.argmax(1).unsqueeze(1)
 
+                    # Break if all tags for the current iteration are end tags
                     if not return_probs and np.all(
                             (captions[:, i] == self.end_id).cpu().numpy()):
                         break
 
+        # Conduct beam search to find highest probable sentence
         else:
+            # Initialize storage tensors and move to GPU
             output, hidden = self.rnn(vid_embeddings[:, :-1])
             captions = torch.zeros(
                 batch_size, desired_num_captions, self.max_len)
+
             if return_probs:
                 probs = torch.zeros(
                     batch_size,
@@ -133,6 +185,7 @@ class VideoCaptioner(nn.Module):
                 if return_probs:
                     probs = probs.cuda()
 
+            # Perform beam search for each image in batch
             for batch_id in range(batch_size):
                 if return_probs:
                     captions[batch_id], probs[batch_id] = self.beam_search(
@@ -142,7 +195,7 @@ class VideoCaptioner(nn.Module):
                          hidden[1][:, batch_id].unsqueeze(0)),
                         return_probs=return_probs,
                         beam_size=beam_size,
-                        topK=desired_num_captions)
+                        top_k=desired_num_captions)
                 else:
                     captions[batch_id] = self.beam_search(
                         vid_embeddings[
@@ -151,8 +204,9 @@ class VideoCaptioner(nn.Module):
                          hidden[1][:, batch_id].unsqueeze(0)),
                         return_probs=return_probs,
                         beam_size=beam_size,
-                        topK=desired_num_captions)
+                        top_k=desired_num_captions)
 
+            # Remove extra dimension
             if desired_num_captions == 1:
                 captions = captions.squeeze(1)
                 if return_probs:
@@ -160,11 +214,25 @@ class VideoCaptioner(nn.Module):
 
         if return_probs:
             return captions, probs
-        else:
-            return captions
+
+        return captions
 
     def beam_search(self, output, hidden=None,
-                   return_probs=False, beam_size=10, topK=1):
+                    return_probs=False, beam_size=10, top_k=1):
+        """
+        Conducts beam search with the network
+
+        Args:
+            output: Input to RNN
+            hidden: Hidden input to RNN
+            return_probs: Option to return probabilities
+            beam_size: Size of beam for beam search
+            top_k: Top k captions to return
+
+        Returns:
+            The predicted captions, and optionally output probabilities
+        """
+
         # Storage vector to store results
         if return_probs:
             idx_sequences = [
@@ -214,9 +282,8 @@ class VideoCaptioner(nn.Module):
 
         if return_probs:
             return (torch.Tensor([idx_seq[0]
-                                 for idx_seq in idx_sequences[:topK]]),
+                                  for idx_seq in idx_sequences[:top_k]]),
                     torch.Tensor([idx_seq[4]
-                                 for idx_seq in idx_sequences[:topK]]))
-        else:
-            return torch.Tensor([idx_seq[0]
-                                 for idx_seq in idx_sequences[:topK]])
+                                  for idx_seq in idx_sequences[:top_k]]))
+        return torch.Tensor([idx_seq[0]
+                             for idx_seq in idx_sequences[:top_k]])

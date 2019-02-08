@@ -10,20 +10,18 @@ import os
 import pickle
 import PIL
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(DIR_NAME + '/../')
 
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
+from utils.create_transformer import create_transformer
+from models.EncoderCNN import EncoderCNN
 
-sys.path.append(dir_name + '/../models/')
-from EncoderCNN import EncoderCNN
-
-transformer = createTransformer()
+transformer = create_transformer()
 
 def getVidArray(video_path, res=224, num_frames=40, frames_int=1):
   """
   Read in video and create numpy volume of shape 
-    (num_samples, num_frames, res[1], res[0], 3)
+    (num_samples, num_frames, 3, res, res)
 
   """
   try:

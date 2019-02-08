@@ -1,24 +1,23 @@
-import pandas as pd
-import pickle
-import numpy as np
-from torch.utils.data import Dataset, sampler, DataLoader
-import nltk
-import torch
-from random import shuffle
 import os
 import sys
-import PIL
-import cv2
 import ast
+import pickle
+from random import shuffle
+import numpy as np
+import pandas as pd
+import cv2
+import PIL
+import nltk
+import torch
+from torch.utils.data import Dataset, sampler, DataLoader
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
-
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
+from create_transformer import create_transformer
 from Vocabulary import Vocabulary
 
-sys.path.append(dir_name + '/../models/')
-from EncoderCNN import EncoderCNN
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append('/../')
+
+from models.EncoderCNN import EncoderCNN
 
 def get_video_dataloader(mode = 'train',
                        videos_path = os.environ['HOME'] + '/Database/MSR-VTT/train-video/',
@@ -124,7 +123,7 @@ class VideoDataset(Dataset):
         self.model = model
 
         if not self.load_features:
-            self.transformer = createTransformer()
+            self.transformer = create_transformer()
             self.encoder = EncoderCNN(model)
 
             # Move to gpu if available

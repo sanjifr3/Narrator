@@ -14,17 +14,9 @@ import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
-
-sys.path.append(dir_name + '/features/')
-from create_transformer import createTransformer
-from Vocabulary import Vocabulary
-
-sys.path.append(dir_name + '/data/')
-from ImageDataloaderV2 import get_image_dataloader, ImageDataset
-
-sys.path.append(dir_name + '/models/')
-from ImageCaptioner import ImageCaptioner
+from utils.Vocabulary import Vocabulary
+from utils.ImageDataloader import get_image_dataloader, ImageDataset
+from models.ImageCaptioner import ImageCaptioner
 
 lr = 0.001
 initial_checkpoint_file = None # 'image_caption-model2-10-0.1863-4.3578.pkl'

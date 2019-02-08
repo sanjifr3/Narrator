@@ -21,7 +21,7 @@
     {% for im in im_dict[0] %}
     <figure>
       <div style="width:image width px; text-align:center;">
-      <img src={{ im['url'] }} style="width:100%">
+      <img src={{ url_for('get_sample', filename=im['url']) }} style="width:100%">
       <audio controls style="height: 25px; width: 200px;">
          <source src="{{ url_for('get_sample', filename=im['gt_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
@@ -31,7 +31,7 @@
          <source src="{{ url_for('get_sample', filename=im['cap_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
       </audio><br>
-      <font size="2.5%">{{ im['caption'] }}</font>
+      <font size="2.5%">{{ im['caption'] }}</font><br><br>
     </figure>
     {% endfor %}
   </div>
@@ -39,7 +39,7 @@
     {% for im in im_dict[1] %}
     <figure>
       <div style="width:image width px; text-align:center;">
-      <img src={{ im['url'] }} style="width:100%">
+      <img src={{ url_for('get_sample', filename=im['url']) }} style="width:100%">
       <audio controls style="height: 25px; width: 200px;">
          <source src="{{ url_for('get_sample', filename=im['gt_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
@@ -49,7 +49,7 @@
          <source src="{{ url_for('get_sample', filename=im['cap_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
       </audio><br>
-      <font size="2.5%">{{ im['caption'] }}</font>
+      <font size="2.5%">{{ im['caption'] }}</font><br><br>
     </figure>
     {% endfor %}
   </div>
@@ -57,7 +57,7 @@
     {% for im in im_dict[2] %}
     <figure>
       <div style="width:image width px; text-align:center;">
-      <img src={{ im['url'] }} style="width:100%">
+      <img src={{ url_for('get_sample', filename=im['url']) }} style="width:100%">
       <audio controls style="height: 25px; width: 200px;">
          <source src="{{ url_for('get_sample', filename=im['gt_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
@@ -67,7 +67,7 @@
          <source src="{{ url_for('get_sample', filename=im['cap_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
       </audio><br>
-      <font size="2.5%">{{ im['caption'] }}</font>
+      <font size="2.5%">{{ im['caption'] }}</font><br><br>
     </figure>
     {% endfor %}
   </div>
@@ -75,7 +75,7 @@
     {% for im in im_dict[3] %}
     <figure>
       <div style="width:image width px; text-align:center;">
-      <img src={{ im['url'] }} style="width:100%">
+      <img src={{ url_for('get_sample', filename=im['url']) }} style="width:100%">
       <audio controls style="height: 25px; width: 200px;">
          <source src="{{ url_for('get_sample', filename=im['gt_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
@@ -85,7 +85,7 @@
          <source src="{{ url_for('get_sample', filename=im['cap_audio']) }}" type="audio/ogg">
          Your browser does not support the audio element.
       </audio><br>
-      <font size="2.5%">{{ im['caption'] }}</font>
+      <font size="2.5%">{{ im['caption'] }}</font><br><br>
     </figure>
     {% endfor %}
   </div> 

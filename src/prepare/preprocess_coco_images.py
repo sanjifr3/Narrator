@@ -10,13 +10,11 @@ import PIL
 from PIL import Image
 import torch
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(DIR_NAME + '/../')
 
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
-
-sys.path.append(dir_name + '/../models/')
-from EncoderCNN import EncoderCNN
+from utils.create_transformer import create_transformer
+from models.EncoderCNN import EncoderCNN
 
 def main(args):
     encoder = EncoderCNN(args.model)
@@ -24,7 +22,7 @@ def main(args):
         encoder.cuda()
     encoder.eval()
 
-    transformer = createTransformer()
+    transformer = create_transformer()
 
     sets = ['train2014','val2014','train2017','val2017']
 

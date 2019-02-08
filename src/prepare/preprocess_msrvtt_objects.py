@@ -10,15 +10,11 @@ import os
 import pickle
 import PIL
 
-dir_name = os.path.dirname(os.path.realpath(__file__))
+DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(DIR_NAME + '/../')
 
-sys.path.append(dir_name + '/../features/')
-from create_transformer import createTransformer
+from models.YOLOObjectDetector import YOLOObjectDetector
 
-sys.path.append(dir_name + '/../models/')
-from YOLOObjectDetectorV2 import YOLOObjectDetector
-
-transformer = createTransformer()
 
 def getObjects(yolo, video_path, res=224, num_frames=40, max_objects=4, frames_int=1):
   """
