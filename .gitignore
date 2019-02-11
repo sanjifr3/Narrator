@@ -2,6 +2,7 @@
 data/processed/coco_captions.csv
 data/processed/coco_2014_captions.csv
 data/processed/coco_2017_captions.csv
+web/app/static/uploads/*
 
 # Ignore models
 models/*.pkl
