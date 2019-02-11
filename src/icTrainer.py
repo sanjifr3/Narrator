@@ -19,16 +19,18 @@ from utils.ImageDataloader import get_image_dataloader, ImageDataset
 from models.ImageCaptioner import ImageCaptioner
 
 lr = 0.001
-initial_checkpoint_file = None # 'image_caption-model2-10-0.1863-4.3578.pkl'
 val_interval = 10
 save_int = 10
 num_epochs = 1000
-version = 4
 beam_size = 3
 
+initial_checkpoint_file = None # 'image_caption-model2-10-0.1863-4.3578.pkl'
+version = 11
 # version < 2: validation loss is invalid
 # version 3: lowest validiation loss
 # version 4: beam_size 3
+# version 10: w/ VGG16
+# 11: Resnet152 w/ GRU w/o beam search
 
 images_path = os.environ['HOME'] + '/Database/coco/images/'
 vocab_path  = 'data/processed/coco_vocab.pkl'
@@ -39,10 +41,11 @@ coco_set = 2014
 load_features = True
 load_captions = True
 preload = True
-base_model='vgg16'
+base_model='resnet152'
 embedding_size = 2048
 embed_size = 256
 hidden_size = 512
+rnn_type = 'gru'
 
 print ("Loading training data...\r", end="")
 train_loader = get_image_dataloader('train',coco_set,
@@ -67,7 +70,7 @@ val_loader = get_image_dataloader('val',coco_set,
 				                          model=base_model,
                                   preload=preload)
 val_loader.dataset.mode = 'val'
-print ("Loading validation data...Done", end="")
+print ("Loading validation data...Done")
 
 vocab_size = train_loader.dataset.get_vocab_size()
 start_id = train_loader.dataset.get_idx()[train_loader.dataset.vocab.start_word]

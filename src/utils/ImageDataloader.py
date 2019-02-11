@@ -267,7 +267,7 @@ class ImageDataset(Dataset):
         
         #print(len(self.df))
         #print
-        self.df = self.df[self.df['filename'] != 'train2014/COCO_train2014_000000167126_resnet152.pkl']
+        self.df = self.df[self.df['filename'] != 'train2014/COCO_train2014_000000167126_' + model + '.pkl']
         #print(len(self.df))
         
         self.files = self.df['id'].unique()

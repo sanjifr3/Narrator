@@ -21,15 +21,17 @@ from utils.VideoDataloader import get_video_dataloader, VideoDataset
 from models.VideoCaptioner import VideoCaptioner
 
 lr = 0.0001
-initial_checkpoint_file = None # 'image_caption-model1-460-0.2898-7.1711.pkl'
 val_interval = 15
 save_int = 100
 num_epochs = 10000
-version = 10
 beam_size = 5
 
-# 8: Pre-training
-# 10: VGG16
+initial_checkpoint_file = None # 'video_caption-model10-45-0.3175-5.0.pkl'
+version = 12
+# 8: Pre-training w/ COCO
+# 10: VGG16 w/ LSTM and beam search
+# 11: Resnet152 w/ GRU w/ beam search
+# 12: Resnet152 w/ LSTM (embed_size: 512) w/ beam search
 
 videos_path = os.environ['HOME'] + '/Database/MSR-VTT/train-video/'
 vocab_path  = 'data/processed/msrvtt_vocab.pkl'
