@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, send_from_directory
+from flask import render_template, request, redirect, url_for, send_from_directory, session
 from app import app
 import sys
 import os
@@ -132,6 +132,32 @@ for i, ix in enumerate(range(16)):
     
 print ("Samples loaded")
 
+scene_example_file = app.config['SAMPLES_DIR'] + app.config['SCENE_EXAMPLE_FILE']
+
+if not os.path.exists(scene_example_file + '.csv'):
+  captions, scene_change_timecodes = narrator.genCaption(scene_example_file + '.mp4', by_scene=True, as_string=True)  
+  sceneSamplesDF = pd.DataFrame({
+    'time': scene_change_timecodes,
+    'caption': captions
+  })
+
+  sceneSamplesDF['caption'] = sceneSamplesDF['caption'].apply(lambda x: x.capitalize())
+
+  for i, caption in enumerate(captions):
+    narrator.genAudioFile(caption, scene_example_file + '.' + str(i) + '.ogg')
+
+  sceneSamplesDF.to_csv(scene_example_file + '.csv', index=False)
+else:
+  sceneSamplesDF = pd.read_csv(scene_example_file + '.csv')
+
+scene_samples_dict = []
+for i, row in sceneSamplesDF.iterrows():
+  scene_samples_dict.append({
+    'time':row['time'],
+    'cap_audio': app.config['SCENE_EXAMPLE_FILE'] + '.' + str(i) + '.ogg',
+    'caption': row['caption'].capitalize()
+  })
+
 ##############################################################################
 ##################################### APP ####################################
 ##############################################################################
@@ -157,55 +183,106 @@ def images():
 def videos():
   return render_template('videos.html', vid_dict=vidSamplesDict, page='videos', title=app.config['TITLE'])
 
+@app.route('/scenes')
+def scenes():
+  return render_template('scenes.html', page='scenes', scenes_dict=scene_samples_dict, title=app.config['TITLE'])
+
 @app.route('/demo', methods=['GET','POST'])
 def demo():
   if request.method == 'POST':
     try:
       file = request.files['file']
+      by_scene = 'by_scene' in request.form
       if file and allowed_file(file.filename):
         file.filename = file.filename.replace(' ','_')
         file_path = os.path.join(app.config['UPLOAD_DIR'], file.filename) 
         file.save(os.path.join(app.config['UPLOAD_DIR'], file.filename))
-        caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True).capitalize()
+
         *filename, ext = file.filename.split('.')
         if isinstance(filename, list):
-            filename = '_'.join(filename) # Reaplce existing . with _
-        cap_audio = filename + '.ogg'
-        narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+            filename = '_'.join(filename) # Replace existing . with _
+       
         typ = 'image'
         if ext in app.config['VID_EXTENSIONS']:
           typ = 'video'
-        
-        return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
+
+        if typ == 'image':
+          by_scene = False
+
+        if not by_scene:
+          caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
+
+          cap_audio = filename + '.ogg'
+          narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+          
+          return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
+
+        else:
+          captions, time_codes = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
+
+          scenes_dict = []
+          for i, caption in enumerate(captions):
+            narrator.genAudioFile(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
+            scenes_dict.append({
+              'time': time_codes[i],
+              'cap_audio': filename + '.' + str(i) + '.ogg',
+              'caption': caption.capitalize()
+          })
+          session['scenes_dict'] = scenes_dict
+          return redirect(url_for('uploaded_file', filename=file.filename, typ='scene', caption='scene', cap_audio='scene'))
     except KeyError as e:
       print (e)
   return render_template('demo.html', page='demo', title=app.config['TITLE'])
 
 @app.route('/demo/<filename>&<cap_audio>&<typ>&<caption>', methods=['GET','POST'])
-def uploaded_file(filename, cap_audio=None, caption="Test", typ='image'):
+def uploaded_file(filename, typ='image', caption="", cap_audio=None):
   if request.method == 'POST':
     try:
       file = request.files['file']
+      by_scene = 'by_scene' in request.form
       if file and allowed_file(file.filename):
         file.filename = file.filename.replace(' ','_')
         file_path = os.path.join(app.config['UPLOAD_DIR'], file.filename) 
         file.save(os.path.join(app.config['UPLOAD_DIR'], file.filename))
-        caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True).capitalize()
+
         *filename, ext = file.filename.split('.')
         if isinstance(filename, list):
-            filename = '_'.join(filename) # Reaplce existing . with _
-        cap_audio = filename + '.ogg'
-        narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+            filename = '_'.join(filename) # Replace existing . with _
+       
         typ = 'image'
         if ext in app.config['VID_EXTENSIONS']:
           typ = 'video'
-        return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
+
+        if typ == 'image':
+          by_scene = False
+
+        if not by_scene:
+          caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
+
+          cap_audio = filename + '.ogg'
+          narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+          
+          return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
+
+        else:
+          captions, time_codes = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
+
+          scenes_dict = []
+          for i, caption in enumerate(captions):
+            narrator.genAudioFile(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
+            scenes_dict.append({
+              'time': time_codes[i],
+              'cap_audio': filename + '.' + str(i) + '.ogg',
+              'caption': caption.capitalize()
+          })
+          session['scenes_dict'] = scenes_dict
+          return redirect(url_for('uploaded_file', filename=file.filename, typ='scene', caption='scene', cap_audio='scene'))
     except KeyError as e:
       print (e)
-  return render_template('demo_output.html', typ=typ, caption=caption, filename=filename, cap_audio=cap_audio, page='demo', title=app.config['TITLE'])
+  return render_template('demo_output.html', filename=filename, typ=typ, caption=caption, cap_audio=cap_audio, page='demo', title=app.config['TITLE'])
 
 @app.route('/uploads/<filename>')
-def send_file(filename):
+def get_upload(filename):
   print (filename)
   return send_from_directory(app.config['UPLOAD_DIR'], filename)
 

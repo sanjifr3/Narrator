@@ -101,6 +101,8 @@
   <title>{{ title }} - Image Examples</title>
   {% elif page == "videos" %}
   <title>{{ title }} - Video Examples</title>
+  {% elif page == "scenes" %}
+  <title>{{ title }} - Scene Examples</title>
   {% elif page == "demo" %}
   <title>{{ title }} - Demo</title>
   {% endif %}
@@ -168,6 +170,13 @@
             <li><a href="{{ url_for('videos') }}">Video Examples</a></li>
           {% endif %}
 
+          <!-- Scene Examples page -->
+          {% if page == "scenes" %}
+            <li class="active"><a href="{{ url_for('scenes') }}">Scene Examples</a></li>
+          {% else %}
+            <li><a href="{{ url_for('scenes') }}">Scene Examples</a></li>
+          {% endif %}
+          
           <!-- Demo -->
           {% if page == "demo" %}
             <li class="active"><a href="{{ url_for('demo') }}">Demo</a>

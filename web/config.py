@@ -24,3 +24,6 @@ class Config(object):
   BEAM_SIZE = 5
   MAX_LEN = 35
   SAMPLES_TO_UPDATE = [] # Specify any images to update for webapp - eg ['image4']
+  SCENE_EXAMPLE_FILE = 'scenes'
+  SECRET_KEY = b'_5#y2L"F4Q8z\n\xec]/'
+  

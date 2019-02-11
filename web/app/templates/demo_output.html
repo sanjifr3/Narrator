@@ -12,9 +12,12 @@
   <p><b>Note</b>: Only supports .mp4 videos for playback</p>
   <br>
   <form action="" method=post enctype=multipart/form-data>
-    <div style="text-align:center;">
+    <div style="text-align:left;">
     <input type=file name=file>
     <br>
+    <input align="left" type="checkbox" name="by_scene" value="by_scene">&nbspBy Scene? (Only for videos)
+    <br><br>
+    <div style="text-align:center;">
     <input type=submit value=Upload>
   </form>
 </div>
@@ -23,22 +26,49 @@
 <div class='container'>
   <div class="starter-template">
     {% if filename %}
+      {% if typ != "scene" %}
       <audio controls style="height: 25px; width: 200px;">
-         <source src="{{ url_for('send_file', filename=cap_audio) }}" type="audio/ogg">
+         <source src="{{ url_for('get_upload', filename=cap_audio) }}" type="audio/ogg">
          Your browser does not support the audio element.
       </audio><br>
       <font size="4%">{{ caption }}</font><br>
+      {% endif %}
       <figure>
       {% if typ == "image" %}
         <div style="width:image width px; text-align:center;">
-        <img src={{ url_for('send_file', filename=filename) }} style="width:50%">
+        <img src={{ url_for('get_upload', filename=filename) }} style="width:50%">
       {% else %}
         <video width="80%" controls>
-          <source src={{ url_for('send_file', filename=filename) }} type="video/mp4">
+          <source src={{ url_for('get_upload', filename=filename) }} type="video/mp4">
           Your browser does not support the video tag
         </video>
       {% endif %}
       </figure>
+
+      {% if typ == "scene" %}
+      <br><br>
+
+      <table style="width: 100%; font-size:150%; text-align:center; vertical-align:center">
+        <tr>
+          <th><div style="font-size:125%; text-align:right">Time Code</th> 
+          <th><div style="font-size:125%; text-align:center">Audio</th> 
+          <th><div style="font-size:125%; text-align:left">Caption</th>
+        </tr>
+
+        {% for scene in session.pop('scenes_dict', []) %}
+        <tr>
+          <td valign="center"><div style="text-align:right"><font size="3%">{{ scene['time'] }}&nbsp&nbsp</font></td>
+          <td><div style="text-align:center"><audio controls style="height: 25px; width: 200px;">
+           <source src="{{ url_for('get_upload', filename=scene['cap_audio']) }}" type="audio/ogg">
+           Your browser does not support the audio element.
+        </audio></td>
+          <td valign="center"><div style="text-align:left"><font size="3%">&nbsp&nbsp{{ scene['caption'] }}</font></td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      {% endif %}
+
     <h1></h1>
     {% else %}
     <h4>Upload image to generate caption!</h4>

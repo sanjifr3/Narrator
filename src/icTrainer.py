@@ -40,12 +40,16 @@ load_features = True
 load_captions = True
 preload = True
 base_model='vgg16'
+embedding_size = 2048
+embed_size = 256
+hidden_size = 512
 
 print ("Loading training data...\r", end="")
 train_loader = get_image_dataloader('train',coco_set,
                                   images_path, 
                                   vocab_path, captions_path, 
                                   batch_size, 
+                                  embedding_size=embedding_size,
                                   load_features=load_features,
                                   load_captions=load_captions,
                                   model=base_model,
@@ -57,16 +61,14 @@ val_loader = get_image_dataloader('val',coco_set,
                                   images_path, 
                                   vocab_path, captions_path, 
                                   batch_size, 
+                                  embedding_size=embedding_size,
                                   load_features=load_features,
                                   load_captions=load_captions,
-				  model=base_model,
+				                          model=base_model,
                                   preload=preload)
 val_loader.dataset.mode = 'val'
 print ("Loading validation data...Done", end="")
 
-embedding_size = 2048
-embed_size = 256
-hidden_size = 512
 vocab_size = train_loader.dataset.get_vocab_size()
 start_id = train_loader.dataset.get_idx()[train_loader.dataset.vocab.start_word]
 end_id = train_loader.dataset.get_idx()[train_loader.dataset.vocab.end_word]

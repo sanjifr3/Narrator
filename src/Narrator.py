@@ -15,6 +15,13 @@ import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
 
+from scenedetect.video_manager import VideoManager
+from scenedetect.scene_manager import SceneManager
+from scenedetect.stats_manager import StatsManager
+
+from scenedetect.detectors.content_detector import ContentDetector
+from scenedetect.detectors.threshold_detector import ThresholdDetector
+
 # pickle needs to be able to find Vocabulary to load vocab
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(DIR_NAME)
@@ -57,8 +64,6 @@ class Narrator(object):
                        max_caption_length = 35,
                        im_res = 224):
 
-
-
         self.num_frames = num_frames
         with open(root_path + msrvtt_vocab_path, 'rb') as f:
             self.msrvtt_vocab = pickle.load(f)
@@ -91,6 +96,7 @@ class Narrator(object):
 
         vc_checkpoint = torch.load(root_path + vc_model_path)
         self.video_captioner.load_state_dict(vc_checkpoint['params'])
+        self.vid_embedding_size = vid_embedding_size
 
         self.tts = TTS()
 
@@ -103,16 +109,16 @@ class Narrator(object):
         self.image_captioner.eval()
         self.video_captioner.eval()
 
-    def genCaption(self, f, beam_size=5, as_string=False):
+    def genCaption(self, f, beam_size=5, as_string=False, by_scene=False):
         ext = f.split('.')[-1]
         if ext in self.img_extensions:
             return self.genImCaption(f, beam_size, as_string)
         elif ext in self.vid_extensions:
-            return self.genVidCaption(f, beam_size, as_string)
+            return self.genVidCaption(f, beam_size, as_string, by_scene)
         else:
             return "ERROR: Invalid file type: " + ext
 
-    def genVidCaption(self, f, beam_size=5, as_string=False):
+    def genVidCaption(self, f, beam_size=5, as_string=False, by_scene=False):
         if not os.path.exists(f):
             return "ERROR: File does not exist!"
 
@@ -120,42 +126,67 @@ class Narrator(object):
 
         total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         num_frames = self.num_frames
-        if total_frames < self.num_frames:
-            num_frames = total_frames
 
-        vid_array = torch.zeros(num_frames, 3, 224, 224)
+        if by_scene:
+            scenes = self.findSceneChanges(f)
+            scene_change_timecodes = [scene[0].get_timecode()[:-4] for scene in scenes]
+            scene_change_idxs = [scene[0].get_frames() for scene in scenes]
+        else:
+            scene_change_timecodes = ['00:00:00']
+            scene_change_idxs = [0]
 
+        vid_embeddings = torch.zeros(len(scene_change_idxs),num_frames,self.vid_embedding_size) 
         if torch.cuda.is_available():
-            vid_array = vid_array.cuda()
+            vid_embeddings = vid_embeddings.cuda()
+       
+        last_frame = scene_change_idxs[-1] + num_frames + 1
 
         frame_idx = 0
+        cap_start_idx = 0
 
         while True:
             ret, frame = cap.read()
 
-            if not ret or frame_idx == num_frames:
+            if not ret or frame_idx == last_frame:
                 break
 
-            try:
-                frame = PIL.Image.fromarray(frame).convert('RGB')
+            if frame_idx in scene_change_idxs:
+                cap_start_idx = frame_idx
+                vid_array = torch.zeros(num_frames, 3, 224, 224)
 
+            if frame_idx - cap_start_idx < num_frames:
+                try:          
+                    frame = PIL.Image.fromarray(frame).convert('RGB')
+
+                    if torch.cuda.is_available():
+                        frame = self.transformer(frame).cuda().unsqueeze(0)
+                    else:
+                        frame = self.transformer(frame).unsqueeze(0)
+
+                    vid_array[frame_idx - cap_start_idx] = frame
+            
+                except OSError as e:
+                    print("Could not process frame in " + f)
+
+            if frame_idx - cap_start_idx == num_frames:
                 if torch.cuda.is_available():
-                    frame = self.transformer(frame).cuda().unsqueeze(0)
-                else:
-                    frame = self.transformer(frame).unsqueeze(0)
+                    vid_array = vid_array.cuda()
+                vid_embeddings[scene_change_idxs.index(cap_start_idx)] = self.encoder(vid_array)
 
-                vid_array[frame_idx] = frame
-                frame_idx += 1
-
-            except OSError as e:
-                print("Could not process frame in " + f)
+            frame_idx += 1
 
         cap.release()
 
-        vid_array = self.encoder(vid_array)
-        caption = self.video_captioner.predict(vid_array.unsqueeze(0), beam_size=beam_size)[0].cpu().numpy().astype(int)
-        caption = self.msrvtt_vocab.decode(caption, clean=True, join=as_string)
-        return caption
+        encoded_captions = self.video_captioner.predict(vid_embeddings, beam_size=beam_size).cpu().numpy().astype(int)
+
+        captions = []
+        for caption in encoded_captions:
+            captions.append(self.msrvtt_vocab.decode(caption, clean=True, join=as_string))
+
+        if not by_scene:
+            return captions[0]
+        
+        return captions, scene_change_timecodes       
 
     def genImCaption(self, f, beam_size=5, as_string=False):
         if os.path.exists(f):
@@ -198,7 +229,6 @@ class Narrator(object):
                 best_score = bleu
                 nearest_gt = gt
 
-
         if as_string:
             gt = ' '.join(nearest_gt).capitalize()
             caption = ' '.join(caption).capitalize()
@@ -210,228 +240,57 @@ class Narrator(object):
     def genAudioFile(self, text, path):
         self.tts.generateAudio(text, path)
         return
+
+    def findSceneChanges(self, video_path, method='threshold', new_stat_file=True):
+        # type: (str) -> List[Tuple[FrameTimecode, FrameTimecode]]
     
-
-
-
-
-
-
-
-
-
-
-
-# DIR_NAME = os.path.dirname(os.path.realpath(__file__))
-
-# sys.path.append(DIR_NAME + '/features/')
-# from create_transformer import create_transformer
-# from Vocabulary import Vocabulary
-
-# sys.path.append(DIR_NAME + '/data/')
-# from VideoDataloader import get_video_dataloader, VideoDataset
-
-# sys.path.append(DIR_NAME + '/models/')
-# from VideoCaptioner import VideoCaptioner
-
-# lr = 0.0001
-# initial_checkpoint_file = None # 'image_caption-model1-460-0.2898-7.1711.pkl'
-# val_interval = 15
-# save_int = 100
-# num_epochs = 10000
-# version = 10
-# beam_size = 5
-
-# # 8: Pre-training
-# # 10: VGG16
-
-# videos_path = os.environ['HOME'] + '/Database/MSR-VTT/train-video/'
-# vocab_path  = 'data/processed/msrvtt_vocab.pkl'
-# captions_path = 'data/processed/msrvtt_captions.csv'
-# models_path = 'models/'
-# base_model = 'vgg16' # 'resnet152'
-# batch_size = 32
-# embedding_size = 25088 # 2048
-# embed_size = 256  
-# hidden_size = 512
-# load_features = True
-# load_captions = True
-# preload = False
-
-# print ("Loading training data...\r", end="")
-# train_loader = get_video_dataloader('train',videos_path, 
-#                                   vocab_path, captions_path, 
-#                                   batch_size,
-#                                   load_features=load_features,
-#                                   load_captions=load_captions,
-#                                   preload=preload,
-#                                   model=base_model,
-#                                   embedding_size=embedding_size,
-#                                   num_workers=0)
-# train_loader.dataset.mode = 'train'
-# print ("Loading training data...Done")
-# print ("Loading validation data...\r", end="")
-# val_loader = get_video_dataloader('dev',videos_path, 
-#                                   vocab_path, captions_path, 
-#                                   batch_size, 
-#                                   load_features=load_features,
-#                                   load_captions=load_captions,
-#                                   preload=preload,
-#                                   model=base_model,
-#                                   embedding_size=embedding_size,
-#                                   num_workers=0)
-# val_loader.dataset.mode = 'dev'
-# print ("Loading validation data...Done", end="")
-
-# vocab_size = train_loader.dataset.get_vocab_size()
-# start_id = train_loader.dataset.get_idx()[train_loader.dataset.vocab.start_word]
-# end_id = train_loader.dataset.get_idx()[train_loader.dataset.vocab.end_word]
-# max_caption_length = train_loader.dataset.max_len
-
-# captioner = VideoCaptioner(embedding_size, embed_size, 
-#                            hidden_size, vocab_size, 
-#                            max_caption_length, 
-#                            start_id, end_id)
-
-# if torch.cuda.is_available():
-#     captioner.cuda()
-#     criterion = nn.CrossEntropyLoss().cuda()
-# else:
-#     criterion = nn.CrossEntropyLoss()
-
-#     # Define the optimizer
-# optimizer = torch.optim.Adam(params=captioner.parameters(), lr=lr)
-
-# train_losses = []
-# val_losses = []
-# val_bleus = []
-
-# best_val_bleu = -1000.0
-# start_time = time.time()
-
-# if initial_checkpoint_file:
-#     checkpoint = torch.load(os.path.join(models_path,initial_checkpoint_file))
-#     captioner.load_state_dict(checkpoint['params'])
-#     optimizer.load_state_dict(checkpoint['optim_params'])
-#     train_losses = checkpoint['train_losses']
-#     val_losses = checkpoint['val_losses']
-#     val_bleus = checkpoint['val_bleus']
-#     best_val_bleu = np.array(val_bleus).max()
-#     starting_epoch = checkpoint['epoch']
-# else:
-#     starting_epoch = 0
-
-# for epoch in range(starting_epoch,num_epochs):
-#     print ('Epoch: [{}/{}]'.format(epoch,num_epochs))
-#     captioner.train()
-#     epoch_start_time = time.time()
-#     train_loss = 0.0
-
-#     # Loop through batches
-#     for train_id, batch in enumerate(train_loader):
-#         batch_start_time = time.time()
-#         _, vid_embeddings, caption_embeddings = batch
-                              
-#         if torch.cuda.is_available():
-#           vid_embeddings = vid_embeddings.cuda()
-#           caption_embeddings = caption_embeddings.cuda()
+        video_manager = VideoManager([video_path])
+        stats_manager = StatsManager()
         
-#         # Forward propagate
-#         probs = captioner(vid_embeddings,caption_embeddings)
-        
-#         # Calculate loss, and backpropagate
-#         loss = criterion(probs.view(-1, vocab_size), caption_embeddings.view(-1))
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-        
-#         # Compute loss
-#         train_loss += loss.item()
-        
-#         # Get training statistics
-#         stats = "Epoch %d, Train step [%d/%d], %ds, Loss: %.4f" \
-#                 % (epoch, train_id, train_loader.dataset.get_seq_len(), time.time() - batch_start_time, loss.item())
-#         print("\r" + stats, end="")
-#         sys.stdout.flush()
-        
-#         if train_id % 100 == 0:
-#             print ("\r" + stats)
-    
-#     sys.stdout.flush()
-#     print ('\n')
-#     train_losses.append(train_loss/train_loader.dataset.get_seq_len())
+        # Construct our SceneManager and pass it our StatsManager.
+        scene_manager = SceneManager(stats_manager)
 
-#     if epoch > 0 and epoch % val_interval == 0:
-#         val_loss = 0.0
-#         val_bleu = 0.0
-#         captioner.eval()
-
-#         for val_id, val_batch in enumerate(val_loader):
-#             batch_start_time = time.time()
-#             idxs, vid_embeddings, caption_embeddings = val_batch
-
-#             if torch.cuda.is_available():
-#                 vid_embeddings = vid_embeddings.cuda()
-#                 caption_embeddings = caption_embeddings.cuda()
-
-#             # Get ground truth captions
-#             refs = val_loader.dataset.get_references(idxs)
+        # Add ContentDetector algorithm (each detector's constructor
+        # takes detector options, e.g. thresholsd).
+        if method == 'content':
+            scene_manager.add_detector(ContentDetector(threshold=30, min_scene_len=40))
+        else:
+            scene_manager.add_detector(ThresholdDetector(min_scene_len=40, threshold=125, min_percent=0.5))
             
-#             if not beam_size:
-#                 preds, probs = captioner.predict(vid_embeddings, True, beam_size=beam_size)
+        base_timecode = video_manager.get_base_timecode()
 
-#                 # Get loss and update val loss
-#                 losses = torch.ones(val_loader.dataset.num_captions)
-#                 for i in range(val_loader.dataset.num_captions):
-#                     losses[i] = criterion(probs.view(-1, vocab_size), caption_embeddings[:,i].contiguous().view(-1))
-#                 #loss = losses.min()
-#                 #loss = criterion(probs.view(-1, vocab_size), caption_embeddings.view(-1))
-#                 val_loss += losses.min().item()
-#             else:
-#                 preds = captioner.predict(vid_embeddings, beam_size=beam_size)
-#                 val_loss += 5
+        # We save our stats file to {VIDEO_PATH}.{CONTENT}.stats.csv.
+        stats_file_path = '%s.%s.stats.csv' % (video_path, method)
 
-#             # Calculate bleu loss per sample in batch
-#             # Sum and add length normalized sum to val_loss
-#             batch_bleu = 0.0
-#             for pred_id in range(len(preds)):
-#                 pred = preds[pred_id].cpu().numpy().astype(int)
-#                 pred_embed = val_loader.dataset.vocab.decode(pred, clean=True)
-#                 batch_bleu += val_loader.dataset.vocab.evaluate(refs[pred_id], pred_embed)
-#             val_bleu += (batch_bleu/len(preds))
+        scene_list = []
 
-#             # Get training statistics
-#             stats = "Epoch %d, Validation step [%d/%d], %ds, Loss: %.4f, Bleu: %.4f" \
-#                     % (epoch, val_id, val_loader.dataset.get_seq_len(), 
-#                         time.time() - batch_start_time, loss.item(), batch_bleu/len(preds))
+        try:
+            # If stats file exists, load it.
+            if not new_stat_file and os.path.exists(stats_file_path):
+                # Read stats from CSV file opened in read mode:
+                with open(stats_file_path, 'r') as stats_file:
+                    stats_manager.load_from_csv(stats_file, base_timecode)
 
-#             print("\r" + stats, end="")
-#             sys.stdout.flush()
+            # Set downscale factor to improve processing speed.
+            video_manager.set_downscale_factor(2)
 
-#             if val_id % 100 == 0:
-#                 print('\r' + stats)
+            # Start video_manager.
+            video_manager.start()
 
-#         val_losses.append(val_loss/val_loader.dataset.get_seq_len())
-#         val_bleus.append(val_bleu/val_loader.dataset.get_seq_len())
+            # Perform scene detection on video_manager.
+            scene_manager.detect_scenes(frame_source=video_manager)
 
-#         if val_bleus[-1] > best_val_bleu:
-#             best_val_bleu = val_bleus[-1]
-#             print ("\nBest model found -- bleu: %.4f, val_loss: %.4f, train_loss: %.4f" % (val_bleus[-1], val_losses[-1], train_losses[-1]))
-#             filename = os.path.join(models_path, "video_caption-model{}-{}-{}-{}.pkl".format(version, epoch, round(val_bleus[-1],4), round(val_losses[-1],4)))
-#             torch.save({'params':captioner.state_dict(),
-#                     'optim_params':optimizer.state_dict(),
-#                     'train_losses':train_losses,
-#                     'val_losses':val_losses,
-#                     'val_bleus':val_bleus,
-#                     'epoch': epoch},filename)
-#         else:
-#             print ("\nValidation -- bleu: %.4f, val_loss: %.4f, train_loss: %.4f" % (val_bleus[-1], val_losses[-1], train_losses[-1]))
-        
-#     if epoch > 0 and epoch % save_int == 0:
-#         filename = os.path.join(models_path, "video_caption-ckpt-model{}-{}-{}-{}.pkl".format(version, epoch, round(val_bleus[-1],4), round(val_losses[-1],4)))
-#         torch.save({'params':captioner.state_dict(),
-#                     'optim_params':optimizer.state_dict(),
-#                     'train_losses':train_losses,
-#                     'val_losses':val_losses,
-#                     'val_bleus':val_bleus,
-#                     'epoch': epoch},filename)
+            # Obtain list of detected scenes.
+            scene_list = scene_manager.get_scene_list(base_timecode)
+            # Each scene is a tuple of (start, end) FrameTimecodes.
+
+            # We only write to the stats file if a save is required:
+            if stats_manager.is_save_required():
+                with open(stats_file_path, 'w') as stats_file:
+                    stats_manager.save_to_csv(stats_file, base_timecode)
+
+        finally:
+            video_manager.release()
+
+        return scene_list
+
