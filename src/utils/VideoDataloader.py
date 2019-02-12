@@ -106,11 +106,14 @@ class VideoDataset(Dataset):
         super(VideoDataset, self).__init__()
 
         try:
-            assert(mode in ['train','dev','test'])
+            assert(mode in ['train','dev','val','test'])
         except:
             print("Invalid mode specified: {}".format(mode))
             print("Defaulting to train mode")
             mode = 'train'
+
+        if mode == 'val':
+          mode = 'dev'
 
         # Declare class variables
         self.mode = mode

@@ -213,10 +213,15 @@ class ImageDataset(Dataset):
         super(ImageDataset, self).__init__()
 
         try:
-            assert(mode in ['train','val','test'])
+            assert(mode in ['train','val','dev','test'])
         except AssertionError:
             print ("Invalid mode specified: {}".format(mode))
-        
+            print("Defaulting to train mode")
+            mode = 'train'
+
+        if mode == 'dev':
+          mode = 'val'
+       
         # Make class variables
         self.mode = mode
         self.max_len = max_len
