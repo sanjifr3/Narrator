@@ -11,11 +11,12 @@ import nltk
 import torch
 from torch.utils.data import Dataset, sampler, DataLoader
 
-from create_transformer import create_transformer
-from Vocabulary import Vocabulary
-
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 sys.path.append('/../')
+sys.path.append(DIR_NAME)
+
+from create_transformer import create_transformer
+from Vocabulary import Vocabulary
 
 from models.EncoderCNN import EncoderCNN
 

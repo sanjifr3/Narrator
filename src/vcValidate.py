@@ -20,7 +20,7 @@ from utils.VideoDataloader import get_video_dataloader, VideoDataset
 from models.VideoCaptioner import VideoCaptioner
 
 # Parse arguments
-parser = arparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, help='model_path',required=True)
 parser.add_argument('--beam', type=int, help='Beam size', required=True)
 parser.add_argument('--vocab_path', type=str, help='vocab_path', required=True)
@@ -41,7 +41,7 @@ rnn_type = 'gru'
 
 print ("Loading validation data...\r", end="")
 val_loader = get_video_dataloader('dev',videos_path, 
-                                  vocab_path, captions_path, 
+                                  args.vocab_path, captions_path, 
                                   batch_size, 
                                   load_features=load_features,
                                   load_captions=load_captions,
@@ -49,6 +49,7 @@ val_loader = get_video_dataloader('dev',videos_path,
                                   model=base_model,
                                   embedding_size=embedding_size,
                                   num_workers=0)
+
 val_loader.dataset.mode = 'dev'
 print ("Loading validation data...Done")
 
@@ -80,7 +81,7 @@ for val_id, val_batch in enumerate(val_loader):
     caption_embeddings = caption_embeddings.cuda()
 
   # Get ground truth captions
-  refs = val_loader.dataset.get_references(idxs.numpy())
+  refs = val_loader.dataset.get_references(idxs)
             
   preds = captioner.predict(vid_embeddings, beam_size=args.beam)
   
@@ -91,12 +92,14 @@ for val_id, val_batch in enumerate(val_loader):
     pred = preds[pred_id].cpu().numpy().astype(int)
     pred_embed = val_loader.dataset.vocab.decode(pred, clean=True)
     batch_bleu += val_loader.dataset.vocab.evaluate(refs[pred_id], pred_embed)
+    #print (pred_embed)
+    #print (refs[pred_id])
   val_bleu += (batch_bleu/len(preds))
 
   # Get training statistics
-  stats = "Epoch %d, Validation step [%d/%d], %ds, Bleu: %.4f" \
-            % (epoch, val_id, val_loader.dataset.get_seq_len(), 
-                time.time() - batch_start_time, batch_bleu/len(preds))
+  stats = "Validation step [%d/%d], Bleu: %.4f" \
+            % (val_id, val_loader.dataset.get_seq_len(), 
+                batch_bleu/len(preds))
 
   print("\r" + stats, end="")
   sys.stdout.flush()

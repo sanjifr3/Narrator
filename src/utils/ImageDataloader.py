@@ -18,11 +18,12 @@ import nltk
 import torch
 from torch.utils.data import Dataset, sampler, DataLoader
 
-from create_transformer import create_transformer
-from Vocabulary import Vocabulary
-
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 sys.path.append('/../')
+sys.path.append(DIR_NAME)
+
+from create_transformer import create_transformer
+from Vocabulary import Vocabulary
 
 from models.EncoderCNN import EncoderCNN
 
@@ -68,7 +69,7 @@ def get_image_dataloader(mode='train',
         assert(coco_set in [2014,2017])
         assert(os.path.exists(images_path))
         assert(os.path.exists(vocab_path))
-        assert(os.path.exists(caption_path))
+        assert(os.path.exists(captions_path))
     except AssertionError:
         # Defaulting conditions
         if mode not in ['train','val','test']:

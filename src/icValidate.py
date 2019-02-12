@@ -20,7 +20,7 @@ from utils.ImageDataloader import get_image_dataloader, ImageDataset
 from models.ImageCaptioner import ImageCaptioner
 
 # Parse arguments
-parser = arparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, help='model_path',required=True)
 parser.add_argument('--beam', type=int, help='Beam size', required=True)
 parser.add_argument('--vocab_path', type=str, help='vocab_path', required=True)
@@ -95,9 +95,9 @@ for val_id, val_batch in enumerate(val_loader):
   val_bleu += (batch_bleu/len(preds))
 
   # Get training statistics
-  stats = "Epoch %d, Validation step [%d/%d], %ds, Bleu: %.4f" \
-            % (epoch, val_id, val_loader.dataset.get_seq_len(), 
-                time.time() - batch_start_time, batch_bleu/len(preds))
+  stats = "Validation step [%d/%d], Bleu: %.4f" \
+            % (val_id, val_loader.dataset.get_seq_len(), 
+                batch_bleu/len(preds))
 
   print("\r" + stats, end="")
   sys.stdout.flush()

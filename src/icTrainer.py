@@ -45,7 +45,7 @@ base_model='resnet152'
 embedding_size = 2048
 embed_size = 256
 hidden_size = 512
-rnn_type = 'gru'
+rnn_type = 'lstm'
 
 print ("Loading training data...\r", end="")
 train_loader = get_image_dataloader('train',coco_set,
