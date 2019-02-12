@@ -7,7 +7,7 @@ dataset,model,0,3,5
 'MSR-VTT',video_caption-model4-360-0.3804-5.0.pkl,0.2690,0.2936,0.2984
 'MSR-VTT',video_caption-model8-495-0.3095-5.0.pkl,0.2776,0.3138,0.3094
 'MSR-VTT',video_caption-model10-45-0.3175-5.0.pkl,
-'MSR-VTT',video_caption-model11-160-0.3501-5.0.pkl,
+'MSR-VTT',video_caption-model11-160-0.3501-5.0.pkl,0.3174,
 'MSR-VTT',video_caption-model11-70-0.347-5.0.pkl,
 'MSR-VTT',video_caption-model11-60-0.3348-5.0.pkl,
 'MSR-VTT',video_caption-model11-60-0.3348-5.0.pkl,
