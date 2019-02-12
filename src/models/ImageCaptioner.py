@@ -15,6 +15,7 @@ class ImageCaptioner(nn.Module):
     A PyTorch CNN-RNN model for Image Captioning.
 
     This class inherits from the torch.nn.Module class.
+
     """
 
     def __init__(self, im_embedding_size, embed_size,
@@ -23,7 +24,7 @@ class ImageCaptioner(nn.Module):
                  num_layers=1, dropout_prob=0.2,
                  rnn_type='lstm', rnn_dropout_prob=0.2):
         """
-        Constructs the ImageCaptioner CNN-RNN
+        Construct the ImageCaptioner CNN-RNN.
 
         Args:
             im_embedding_size: Size of the image embedding from the CNN
@@ -41,6 +42,7 @@ class ImageCaptioner(nn.Module):
 
         Returns:
             A PyTorch network model
+
         """
         super(ImageCaptioner, self).__init__()
 
@@ -78,7 +80,7 @@ class ImageCaptioner(nn.Module):
 
     def forward(self, im_embeddings, caption_embeddings=None, mode='train'):
         """
-        Compute the forward pass of the network
+        Compute the forward pass of the network.
 
         Args:
             im_embeddings: Image embeddings from CNN
@@ -86,8 +88,8 @@ class ImageCaptioner(nn.Module):
 
         Returns:
             The network probability outputs
-        """
 
+        """
         if mode == 'test':
             return self.predict(im_embeddings)
 
@@ -110,8 +112,7 @@ class ImageCaptioner(nn.Module):
     def predict(self, im_embeddings, return_probs=False,
                 beam_size=None, desired_num_captions=1):
         """
-        Predicts the captions for the given image embeddings
-
+        Predicts the captions for the given image embeddings.
 
         Args:
             im_embeddings: Image embeddings from CNN
@@ -121,8 +122,8 @@ class ImageCaptioner(nn.Module):
 
         Returns:
             The predicted captions, and optionally the output probabilities
-        """
 
+        """
         # Prepare the image for passing through the first RNN
         if len(im_embeddings.size()) == 2:
             batch_size = 1
@@ -168,10 +169,8 @@ class ImageCaptioner(nn.Module):
                     word_embedding = output.argmax(1).unsqueeze(1)
 
                     # Break if all tags for current iteration are end tags
-                    if not return_probs and np.all((
-                                                    captions[:, i]
-                                                    == self.end_id
-                                                   ).cpu().numpy()):
+                    if not return_probs and np.all(
+                            (captions[:, i] == self.end_id).cpu().numpy()):
                         break
         # Conduct beam search to find highest probable sentence
         else:
@@ -217,7 +216,7 @@ class ImageCaptioner(nn.Module):
     def beam_search(self, output, hidden=None,
                     return_probs=False, beam_size=10, top_k=1):
         """
-        Conducts beam search with the network
+        Conducts beam search with the network.
 
         Args:
             output: Input to RNN
@@ -228,8 +227,8 @@ class ImageCaptioner(nn.Module):
 
         Returns:
             The predicted captions, and optionally output probabilities
-        """
 
+        """
         # Storage vector to store results
         if return_probs:
             idx_sequences = [[[], 0.0, output, hidden,

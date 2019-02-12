@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-"""
-Builds a Vocabulary with the COCO trainings set
-"""
+"""Builds a Vocabulary with the COCO trainings set."""
 from __future__ import print_function, unicode_literals, division
 import re
 import unicodedata
 import os
 import sys
-import nltk
 import pickle
 import argparse
-import pandas as pd
 from collections import Counter
+import pandas as pd
+import nltk
 
 # Get file directory name
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
@@ -20,27 +18,25 @@ sys.path.append(DIR_NAME + '/../')
 from utils.Vocabulary import Vocabulary
 
 
-def unicodeToAscii(s):
-    '''Convert unicide string to plain ASCII'''
-
+def unicode_to_ascii(s):
+    """Convert unicide string to plain ASCII."""
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn'
     )
 
 
-def normalizeString(s):
-    '''Lowercase, trim, and remove non-letter characters'''
-
-    s = unicodeToAscii(s.lower().strip())
+def normalize_string(s):
+    """Lowercase, trim, and remove non-letter characters."""
+    s = unicode_to_ascii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
 
 
-def buildVocabulary(captions_path, threshold):
+def build_vocabulary(captions_path, threshold):
     """
-    Generates a vocabulary from the MSR-VTTT
+    Generate a vocabulary from the MSR-VTT dataset.
 
     Args:
         captions_path: Path to MSR-VTT captions
@@ -48,7 +44,6 @@ def buildVocabulary(captions_path, threshold):
     Return:
         A Vocabulary built on the MSR-VTT training set.
     """
-
     counter = Counter()
 
     # Read in captions
@@ -57,10 +52,10 @@ def buildVocabulary(captions_path, threshold):
     # Tokenize and update token counter
     for i, row in df.iterrows():
         if i % 1000 == 0:
-            print("Tokenizing progress: {}%\r".format(
+            print('Tokenizing progress: {}%\r'.format(
                 round(i / float(len(df)) * 100.0), 2), end='')
 
-        caption = normalizeString(row['caption'])
+        caption = normalize_string(row['caption'])
         tokens = nltk.tokenize.word_tokenize(caption)
         counter.update(tokens)
 
@@ -79,14 +74,13 @@ def buildVocabulary(captions_path, threshold):
 
 def main(args):
     """
-    Main function for building coco vocabulary
+    Build MSR-VTT vocabulary from MSR-VTT training dataset.
 
     Args:
         args: commandline arguments
     """
-
     # Build vocabulary
-    vocab = buildVocabulary(args.captions_path, args.threshold)
+    vocab = build_vocabulary(args.captions_path, args.threshold)
 
     # Save vocabulary
     with open(args.vocab_path, 'wb') as f:

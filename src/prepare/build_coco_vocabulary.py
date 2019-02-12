@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-"""
-Builds a Vocabulary with the COCO trainings eet
-"""
+"""Builds a Vocabulary with the COCO trainings set."""
 from __future__ import print_function, unicode_literals, division
 import re
-import unicodedata
+import os
 import sys
-import nltk
 import pickle
 import argparse
 from collections import Counter
-import os
+import unicodedata
+import nltk
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -18,48 +16,37 @@ sys.path.append(DIR_NAME + '/../utils/')
 from Vocabulary import Vocabulary
 
 
-def unicodeToAscii(s):
-    '''Convert unicide string to plain ASCII'''
-
+def unicode_to_ascii(s):
+    """Convert unicide string to plain ASCII."""
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn'
     )
 
 
-def normalizeString(s):
-    '''Lowercase, trim, and remove non-letter characters'''
-
-    s = unicodeToAscii(s.lower().strip())
+def normalize_string(s):
+    """Lowercase, trim, and remove non-letter characters."""
+    s = unicode_to_ascii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
 
 
-def updateCounter(counter, captions):
-    '''Update word counters'''
-
+def update_counter(counter, captions):
+    """Update word counters."""
     # Tokenize and update token counter
     for i, caption in enumerate(captions):
-        if i % 1000:
-            print(
-                'Tokenizing process: {}%\r'.format(
-                    round(
-                        i /
-                        float(
-                            len(captions)) *
-                        100.0),
-                    2),
-                end='')
+        if i % 1000 == 0:
+            print('Tokenizing process: {}%\r'.format(
+                round(i / float(len(captions)) * 100.0), 2), end='')
 
-        caption = normalizeString(caption)
+        caption = normalize_string(caption)
         tokens = nltk.tokenize.word_tokenize(caption)
         counter.update(tokens)
 
 
-def generateVocabulary(counter, threshold):
-    '''Generates vocabulary'''
-
+def generate_vocabulary(counter, threshold):
+    """Generate vocabulary."""
     vocab = Vocabulary()
 
     # Keep words that have more occurances thatn threshold
@@ -74,12 +61,11 @@ def generateVocabulary(counter, threshold):
 
 def main(args):
     """
-    Main function for building coco vocabulary
+    Build coco vocabulary from COCO training dataset.
 
     Args:
         args: commandline arguments
     """
-
     # Load coco library
     sys.path.append(args.coco_path + '/PythonAPI')
     from pycocotools.coco import COCO
@@ -117,10 +103,10 @@ def main(args):
         captions = [ann['caption'] for ann in anns]
 
         # Update vocabulary with new captions
-        updateCounter(counter, captions)
+        update_counter(counter, captions)
 
     # Generate vocabulary
-    vocab = generateVocabulary(counter, args.threshold)
+    vocab = generate_vocabulary(counter, args.threshold)
 
     # Save files
     with open(args.vocab_path, 'wb') as f:

@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-A PyTorch CNN-RNN model for Video Captioning
+A PyTorch CNN-RNN model for Video Captioning.
 
 Based on the Show & Tell Architecture (RNN also used for Encoding frames)
 """
@@ -21,7 +22,7 @@ class VideoCaptioner(nn.Module):
                  end_id=2, num_layers=1, dropout_prob=0.2,
                  rnn_type='lstm', rnn_dropout_prob=0.2):
         """
-        Constructs the VideoCaptioner CNN-RNN
+        Construct the VideoCaptioner CNN-RNN.
 
         Args:
             vid_embedding_size: Size of the vid embedding from the CNN
@@ -39,6 +40,7 @@ class VideoCaptioner(nn.Module):
 
         Returns:
             A PyTorch network model
+
         """
         super(VideoCaptioner, self).__init__()
 
@@ -50,6 +52,7 @@ class VideoCaptioner(nn.Module):
         self.max_len = max_caption_length
         self.start_id = start_id
         self.end_id = end_id
+        self.rnn_type = rnn_type
 
         # Selected chosen rnn type
         if rnn_type.lower() == 'lstm':
@@ -76,7 +79,7 @@ class VideoCaptioner(nn.Module):
 
     def forward(self, vid_embeddings, caption_embeddings=None, mode='train'):
         """
-        Compute the forward pass of the network
+        Compute the forward pass of the network.
 
         Args:
             vid_embeddings: Video embeddings from the CNN
@@ -84,8 +87,8 @@ class VideoCaptioner(nn.Module):
 
         Returns:
             The network probability outputs
-        """
 
+        """
         if mode == 'test':
             return self.predict(vid_embeddings)
 
@@ -108,7 +111,7 @@ class VideoCaptioner(nn.Module):
     def predict(self, vid_embeddings, return_probs=False,
                 beam_size=None, desired_num_captions=1):
         """
-        Predicts the captions for the given video embeddings
+        Predict the captions for the given video embeddings.
 
         Args:
             vid_embedding: Video embeddings from the CNN
@@ -118,8 +121,8 @@ class VideoCaptioner(nn.Module):
 
         Returns:
             The predicted captions, and optionally the output probabilities
-        """
 
+        """
         # Prepare the video for passing through the RNN
         if len(vid_embeddings.size()) == 2:
             batch_size = 1
@@ -189,12 +192,16 @@ class VideoCaptioner(nn.Module):
 
             # Perform beam search for each image in batch
             for batch_id in range(batch_size):
+                if self.rnn_type == 'lstm':
+                    bs_hidden = (hidden[0][:, batch_id].unsqueeze(0),
+                                 hidden[1][:, batch_id].unsqueeze(0))
+                else:
+                    bs_hidden = hidden[:, batch_id, :].unsqueeze(0)
+
                 if return_probs:
                     captions[batch_id], probs[batch_id] = self.beam_search(
-                        vid_embeddings[
-                            :, -1][batch_id].unsqueeze(0).unsqueeze(0),
-                        (hidden[0][:, batch_id].unsqueeze(0),
-                         hidden[1][:, batch_id].unsqueeze(0)),
+                        vid_embeddings[:, -1][batch_id].unsqueeze(0).unsqueeze(0),
+                        bs_hidden,
                         return_probs=return_probs,
                         beam_size=beam_size,
                         top_k=desired_num_captions)
@@ -222,7 +229,7 @@ class VideoCaptioner(nn.Module):
     def beam_search(self, output, hidden=None,
                     return_probs=False, beam_size=10, top_k=1):
         """
-        Conducts beam search with the network
+        Conduct beam search with the network.
 
         Args:
             output: Input to RNN
@@ -233,8 +240,8 @@ class VideoCaptioner(nn.Module):
 
         Returns:
             The predicted captions, and optionally output probabilities
-        """
 
+        """
         # Storage vector to store results
         if return_probs:
             idx_sequences = [

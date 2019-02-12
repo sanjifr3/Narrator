@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 """
-Simple wrapper for the pytorch implementation from:
-https://github.com/ayooshkathuria/pytorch-yolo-v3
+Simple wrapper for the ayooshkathuria's pytorch implementation.
+
+git: https://github.com/ayooshkathuria/pytorch-yolo-v3
+
 """
 from __future__ import division, print_function
 import sys
@@ -20,14 +23,16 @@ from darknet import Darknet
 
 class YOLOObjectDetector(object):
     """
-    Simple wrapper class for pytorch yolov3 implementation from:
-      https://github.com/ayooshkathuria/pytorch-yolo-v3
+    Simple wrapper for the ayooshkathuria's pytorch implementation.
+
+    git: https://github.com/ayooshkathuria/pytorch-yolo-v3
+
     """
 
     def __init__(self, darknet_path=os.environ['HOME'] + '/programs/darknet/',
                  model_name='yolov3', dataset='coco', dim=480):
         """
-        Constructs the YOLOObjectDetector class
+        Construct the YOLOObjectDetector class.
 
         Args:
             darknet_path: Path to darknet
@@ -47,8 +52,8 @@ class YOLOObjectDetector(object):
         self.colors = pickle.load(
             open(
                 DIR_NAME +
-                "/pytorch-yolo-v3/pallete",
-                "rb"))
+                '/pytorch-yolo-v3/pallete',
+                'rb'))
 
         # Load model
         print('Loading ' + model_name + ' network')
@@ -62,9 +67,9 @@ class YOLOObjectDetector(object):
             assert self.dim % 32 == 0 and self.dim > 32
         except AssertionError as e:
             print(e)
-            print("Invalid model dimension -- must be multiple of 32")
+            print('Invalid model dimension -- must be multiple of 32')
             self.dim = int(self.dim / 32) * 32
-            print("Moded dimension changed to {}".format(self.dim))
+            print('Moded dimension changed to {}'.format(self.dim))
 
         # Change input size
         self.model.net_info['height'] = self.dim
@@ -82,7 +87,7 @@ class YOLOObjectDetector(object):
     def detect(self, im, thresh=0.3, nms_thresh=0.45,
                max_objects=4, draw=False):
         """
-        Detects objects in given image
+        Detect objects in given image.
 
         Args:
             im: Image
@@ -93,6 +98,7 @@ class YOLOObjectDetector(object):
         Returns:
             object classes plus details and optionally an
             image with results drawn
+
         """
         # Preprocess image
         im, orig_im, dim = self.prep_image(im)
@@ -169,11 +175,11 @@ class YOLOObjectDetector(object):
         return classes, output
 
     def draw(self, x, im):
-        '''Draw object on given image'''
+        """Draw object on given image."""
         c1 = tuple(x[1:3].int())
         c2 = tuple(x[3:5].int())
         cls = int(x[-1])
-        label = "{0}".format(self.classes[cls])
+        label = '{0}'.format(self.classes[cls])
 
         color = self.colors[np.random.randint(len(self.colors))]
         cv2.rectangle(im, c1, c2, color, 1)
@@ -184,7 +190,7 @@ class YOLOObjectDetector(object):
                     cv2.FONT_HERSHEY_PLAIN, 1, [225, 255, 255], 1)
 
     def prep_image(self, im):
-        '''Prepare image for inputting into neural network'''
+        """Prepare image for inputting into neural network."""
         orig_im = im
         dim = orig_im.shape[1], orig_im.shape[0]
         im = (self.letterbox_image(orig_im))
@@ -193,7 +199,7 @@ class YOLOObjectDetector(object):
         return im_, orig_im, dim
 
     def letterbox_image(self, im):
-        '''resize image with unchanged aspect ratio using padding'''
+        """Resize image with unchanged aspect ratio using padding."""
         img_w, img_h = im.shape[1], im.shape[0]
         w, h = self.dim, self.dim
         new_w = int(img_w * min(w / img_w, h / img_h))
@@ -207,7 +213,7 @@ class YOLOObjectDetector(object):
         return canvas
 
     def get_test_input(self):
-        '''Get sample test input for network'''
+        """Get sample test input for network."""
         im = cv2.imread(DIR_NAME + '/pytorch-yolo-v3/dog-cycle-car.png')
         im = cv2.resize(im, (self.dim, self.dim))
         im_ = im[:, :, ::-1].transpose((2, 0, 1))

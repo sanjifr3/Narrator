@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-A PyTorch CNN model wrapper
+A PyTorch CNN model wrapper.
 
 Wraps a pre-trained CNN network
 """
@@ -11,7 +12,7 @@ import torchvision.models as models
 
 class EncoderCNN(nn.Module):
     """
-    A PyTorch CNN model wrapper
+    A PyTorch CNN model wrapper.
 
     This class inherits form the torch.nn.Module class
     """
@@ -23,7 +24,7 @@ class EncoderCNN(nn.Module):
 
     def __init__(self, base_model='vgg'):
         """
-        Constructs the EncoderCNN class
+        Construct the EncoderCNN class.
 
         Args:
             base_model: Base CNN model to use
@@ -79,17 +80,19 @@ class EncoderCNN(nn.Module):
 
         self.bm = nn.Sequential(*modules)
 
+        return
+
     def forward(self, images):
         """
-        Compute the forward pass of the network
+        Compute the forward pass of the network.
 
         Args:
             images: Image Tensor
 
         Returns:
             Image embeddings from second last layer of base network
-        """
 
+        """
         with torch.no_grad():
             features = self.bm(images)
         return features.view(features.size(0), -1)

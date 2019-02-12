@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-A PyTorch CNN-RNN model for Video Captioning
+A PyTorch CNN-RNN model for Video Captioning.
 
 An re-implementation of the S2VT network.
 """
@@ -14,6 +15,7 @@ class S2VTCaptioner(nn.Module):
     A PyTorch CNN-RNN model for video captioning.
 
     This class inherits from the torch.nn.Module class
+
     """
 
     def __init__(self, vid_embedding_size, embed_size, hidden_size,
@@ -21,9 +23,9 @@ class S2VTCaptioner(nn.Module):
                  num_layers=1, dropout_prob=0.2, rnn_type='lstm',
                  rnn_dropout_prob=0.2):
         """
-        Constructs the S2VT VideoCaptioner CNN-RNN
+        Construct the S2VT VideoCaptioner CNN-RNN.
 
-         Args:
+        Args:
             vid_embedding_size: Size of the vid embedding from the CNN
             embed_size: Word embedding size
             hidden_size: Hidden size of RNN
@@ -39,6 +41,7 @@ class S2VTCaptioner(nn.Module):
 
         Returns:
             A PyTorch network model
+
         """
         super(S2VTCaptioner, self).__init__()
 
@@ -83,7 +86,7 @@ class S2VTCaptioner(nn.Module):
     def forward(self, vid_embeddings,
                 caption_embeddings=None, mode='train'):
         """
-        Compute the forward pass of the network
+        Compute the forward pass of the network.
 
         Args:
             vid_embeddings: Video embeddings from the CNN
@@ -91,8 +94,8 @@ class S2VTCaptioner(nn.Module):
 
         Returns:
             The network probability outputs
-        """
 
+        """
         if caption_embeddings is None:
             mode = 'test'
 
@@ -142,7 +145,7 @@ class S2VTCaptioner(nn.Module):
 
     def predict(self, vid_embeddings, return_probs=False):
         """
-        Predicts the captions for the given video embeddings
+        Predict the captions for the given video embeddings.
 
         Args:
             vid_embedding: Video embeddings from the CNN
@@ -151,8 +154,8 @@ class S2VTCaptioner(nn.Module):
 
         Returns:
             The predicted captions, and optionally the output probabilities
-        """
 
+        """
         # Prepare video embeddings for passing through RNN
         if len(vid_embeddings.size()) == 2:
             batch_size = 1
