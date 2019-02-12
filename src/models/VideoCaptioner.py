@@ -34,7 +34,8 @@ class VideoCaptioner(nn.Module):
             num_layers: Number of layers for RNN
             dropout_prob: Probability of dropout for image input
             rnn_type: Type of RNN unit to use
-            rnn_dropout_prob: Dropout probability for RNN (only if num_layers>1)
+            rnn_dropout_prob: Dropout probability for RNN
+                              (only if num_layers>1)
 
         Returns:
             A PyTorch network model
@@ -92,7 +93,8 @@ class VideoCaptioner(nn.Module):
         vid_embeddings = self.inp(vid_embeddings)
         vid_embeddings = self.inp_dropout(vid_embeddings)
 
-        caption_embeddings = self.embed(caption_embeddings[:, :-1]) # Drop end tag
+        # Drop end tag
+        caption_embeddings = self.embed(caption_embeddings[:, :-1])
 
         # Join inputs sequentially
         inputs = torch.cat((vid_embeddings, caption_embeddings), 1)

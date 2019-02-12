@@ -34,7 +34,8 @@ class S2VTCaptioner(nn.Module):
             num_layers: Number of layers for RNN
             dropout_prob: Probability of dropout for image input
             rnn_type: Type of RNN unit to use
-            rnn_dropout_prob: Dropout probability for RNN (only if num_layers>1)
+            rnn_dropout_prob: Dropout probability for RNN
+                              (only if num_layers>1)
 
         Returns:
             A PyTorch network model
@@ -69,8 +70,8 @@ class S2VTCaptioner(nn.Module):
                                 dropout=(0 if num_layers == 1
                                          else rnn_dropout_prob))
 
-
-        self.out_rnn = rnn_type(hidden_size + embed_size, hidden_size,
+        self.out_rnn = rnn_type(hidden_size + embed_size,
+                                hidden_size,
                                 num_layers,
                                 batch_first=True,
                                 dropout=(0 if num_layers == 1

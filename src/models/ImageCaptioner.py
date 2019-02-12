@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 A PyTorch CNN-RNN model for Image Captioning.
 
@@ -35,7 +36,8 @@ class ImageCaptioner(nn.Module):
             num_layers: Number of layers for RNN
             dropout_prob: Probability of dropout for image input
             rnn_type: Type of RNN unit to use
-            rnn_dropout_prob: Dropout probability for RNN (only if num_layers>1)
+            rnn_dropout_prob: Dropout probability for RNN
+                              (only if num_layers>1)
 
         Returns:
             A PyTorch network model
@@ -93,7 +95,8 @@ class ImageCaptioner(nn.Module):
         im_embeddings = self.inp(im_embeddings)
         im_embeddings = self.inp_dropout(im_embeddings)
 
-        caption_embeddings = self.embed(caption_embeddings[:, :-1]) # Drop end tag
+        # Drop end tag
+        caption_embeddings = self.embed(caption_embeddings[:, :-1])
 
         # Join the inputs sequentially
         inputs = torch.cat((im_embeddings, caption_embeddings), 1)
@@ -165,7 +168,9 @@ class ImageCaptioner(nn.Module):
                     word_embedding = output.argmax(1).unsqueeze(1)
 
                     # Break if all tags for current iteration are end tags
-                    if not return_probs and np.all((captions[:, i] == self.end_id
+                    if not return_probs and np.all((
+                                                    captions[:, i]
+                                                    == self.end_id
                                                    ).cpu().numpy()):
                         break
         # Conduct beam search to find highest probable sentence
