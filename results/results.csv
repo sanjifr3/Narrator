@@ -26,7 +26,7 @@ COCO,image_caption-model3-25-0.1895-4.7424.pkl,
 COCO,image_caption-model3-80-0.1883-5.2119.pkl,
 COCO,image_caption-model3-50-0.1871-5.0162.pkl,
 
-COCO,image_caption-model4-20-0.1328-5.0.pkl,
+COCO,image_caption-model4-20-0.1328-5.0.pkl,0.1230,
 COCO,image_caption-model4-70-0.1317-5.0.pkl,
 COCO,image_caption-model4-30-0.1313-5.0.pkl,
 COCO,image_caption-model10-80-0.1179-5.0.pkl,
