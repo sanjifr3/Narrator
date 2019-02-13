@@ -154,7 +154,7 @@ def main(args):
             val_bleu = 0.0
             captioner.eval()
 
-            # Loop through val epochs
+            # Loop through val batches
             for val_id, val_batch in enumerate(val_loader):
                 batch_start_time = time.time()
                 idxs, vid_embeddings, caption_embeddings = val_batch

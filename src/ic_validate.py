@@ -19,8 +19,8 @@ def main(args):
         args: commandline parameters
 
     """
-    # Get validation COCO dataloaders
-    print("Loading validation data...\r", end="")
+    # Get validation COCO dataloader
+    print('Loading validation data...\r', end='')
     val_loader = get_image_dataloader(
         'val', args.coco_set,
         args.images_path,
@@ -32,7 +32,7 @@ def main(args):
         model=args.base_model,
         preload=args.preload)
     val_loader.dataset.mode = 'val'
-    print("Loading validation data...Done")
+    print('Loading validation data...Done')
 
     # Extract information from dataset
     vocab_size = val_loader.dataset.get_vocab_size()
@@ -82,23 +82,23 @@ def main(args):
                 refs[pred_id], pred_embed)
         val_bleu += (batch_bleu / len(preds))
 
-        # Get training statistics
-        stats = "Validation step [%d/%d], Bleu: %.4f" \
+        # Get validation statistics
+        stats = 'Validation step [%d/%d], Bleu: %.4f' \
             % (val_id, val_loader.dataset.get_seq_len(),
                batch_bleu / len(preds))
 
-        print("\r" + stats, end="")
+        print('\r' + stats, end='')
         sys.stdout.flush()
 
         if val_id % 250 == 0:
             print('\r' + stats)
 
     val_bleu /= val_loader.dataset.get_seq_len()
-    print("\nValidation -- bleu: %.4f" % (val_bleu))
+    print('\nValidation -- bleu: %.4f' % (val_bleu))
 
 
 if __name__ == '__main__':
-    # Training parameters
+    # Validation parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type=str, required=True,
                         help='Path to trained model')
@@ -117,24 +117,6 @@ if __name__ == '__main__':
                         help='Path to COCO images',
                         default=os.environ['HOME'] +
                         '/Database/coco/images/')
-    parser.add_argument('--lr', type=float, required=False,
-                        help='Learning rate',
-                        default=0.001)
-    parser.add_argument('--val_interval', type=int, required=False,
-                        help='Frequency of epochs to validate',
-                        default=10)
-    parser.add_argument('--save_int', type=int, required=False,
-                        help='Frequency of epochs to save checkpoint',
-                        default=10)
-    parser.add_argument('--num_epochs', type=int, required=False,
-                        help='Number of epochs',
-                        default=1000)
-    parser.add_argument('--initial_checkpoint_file', type=str,
-                        required=False, help='starting checkpoint file',
-                        default=None)
-    parser.add_argument('--version', type=int, required=False,
-                        help='Tag for current model',
-                        default=11)
     parser.add_argument('--batch_size', type=int, required=False,
                         help='Batch size',
                         default=64)
