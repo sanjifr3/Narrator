@@ -197,7 +197,7 @@ class VideoCaptioner(nn.Module):
                                  hidden[1][:, batch_id].unsqueeze(0))
                 else:
                     bs_hidden = hidden[:, batch_id, :].unsqueeze(0)
-
+                    
                 if return_probs:
                     captions[batch_id], probs[batch_id] = self.beam_search(
                         vid_embeddings[:, -1][batch_id].unsqueeze(0).unsqueeze(0),
@@ -207,10 +207,8 @@ class VideoCaptioner(nn.Module):
                         top_k=desired_num_captions)
                 else:
                     captions[batch_id] = self.beam_search(
-                        vid_embeddings[
-                            :, -1][batch_id].unsqueeze(0).unsqueeze(0),
-                        (hidden[0][:, batch_id].unsqueeze(0),
-                         hidden[1][:, batch_id].unsqueeze(0)),
+                        vid_embeddings[:, -1][batch_id].unsqueeze(0).unsqueeze(0),
+                        bs_hidden,
                         return_probs=return_probs,
                         beam_size=beam_size,
                         top_k=desired_num_captions)
