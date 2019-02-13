@@ -1,111 +1,169 @@
+# -*- coding: utf-8 -*-
+"""Module for validating the Image Captioner models."""
 from __future__ import print_function
 import sys
-import time
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-import nltk
-import pickle
-import pandas as pd
 import argparse
-
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision
-from torch.autograd import Variable
 
 from utils.Vocabulary import Vocabulary
 from utils.ImageDataloader import get_image_dataloader, ImageDataset
 from models.ImageCaptioner import ImageCaptioner
 
-# Parse arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, help='model_path', required=True)
-parser.add_argument('--beam', type=int, help='Beam size', required=True)
-parser.add_argument('--vocab_path', type=str, help='vocab_path', required=True)
-args = parser.parse_args()
 
-images_path = os.environ['HOME'] + '/Database/coco/images/'
-captions_path = os.environ['HOME'] + \
-    '/programs/cocoapi/annotations/coco_captions.csv'
-models_path = 'models/'
-batch_size = 64
-coco_set = 2014
-load_features = True
-load_captions = True
-preload = True
-base_model = 'resnet152'
-embedding_size = 2048
-embed_size = 256
-hidden_size = 512
-rnn_type = 'gru'
+def main(args):
+    """
+    Validate image captioner with given parameters.
 
-print("Loading validation data...\r", end="")
-val_loader = get_image_dataloader('val', coco_set,
-                                  images_path,
-                                  args.vocab_path, captions_path,
-                                  batch_size,
-                                  embedding_size=embedding_size,
-                                  load_features=load_features,
-                                  load_captions=load_captions,
-                                  model=base_model,
-                                  preload=preload)
-val_loader.dataset.mode = 'val'
-print("Loading validation data...Done")
+    Args:
+        args: commandline parameters
 
-vocab_size = val_loader.dataset.get_vocab_size()
-start_id = val_loader.dataset.get_idx()[val_loader.dataset.vocab.start_word]
-end_id = val_loader.dataset.get_idx()[val_loader.dataset.vocab.end_word]
-max_caption_length = val_loader.dataset.max_len
+    """
+    # Get validation COCO dataloaders
+    print("Loading validation data...\r", end="")
+    val_loader = get_image_dataloader(
+        'val', args.coco_set,
+        args.images_path,
+        args.vocab_path, args.captions_path,
+        args.batch_size,
+        embedding_size=args.embedding_size,
+        load_features=args.load_features,
+        load_captions=args.load_captions,
+        model=args.base_model,
+        preload=args.preload)
+    val_loader.dataset.mode = 'val'
+    print("Loading validation data...Done")
 
-captioner = ImageCaptioner(embedding_size, embed_size,
-                           hidden_size, vocab_size,
-                           max_caption_length,
-                           start_id, end_id)
+    # Extract information from dataset
+    vocab_size = val_loader.dataset.get_vocab_size()
+    start_id = val_loader.dataset.get_idx(
+        )[val_loader.dataset.vocab.start_word]
+    end_id = val_loader.dataset.get_idx(
+        )[val_loader.dataset.vocab.end_word]
+    max_caption_length = val_loader.dataset.max_len
 
-if torch.cuda.is_available():
-    captioner.cuda()
-
-checkpoint = torch.load(args.model_path)
-
-captioner.load_state_dict(checkpoint['params'])
-captioner.eval()
-
-val_bleu = 0.0
-
-for val_id, val_batch in enumerate(val_loader):
-    idxs, im_embeddings, caption_embeddings = val_batch
+    # Build Image Captioner with given parameters
+    captioner = ImageCaptioner(args.embedding_size, args.embed_size,
+                               args.hidden_size, vocab_size,
+                               max_caption_length,
+                               start_id, end_id)
 
     if torch.cuda.is_available():
-        im_embeddings = im_embeddings.cuda()
-        caption_embeddings = caption_embeddings.cuda()
+        captioner.cuda()
 
-    # Get ground truth captions
-    refs = val_loader.dataset.get_references(idxs.numpy())
+    # Load weights
+    checkpoint = torch.load(args.model_path)
+    captioner.load_state_dict(checkpoint['params'])
+    captioner.eval()
 
-    preds = captioner.predict(im_embeddings, beam_size=args.beam)
+    val_bleu = 0.0
 
-    # Calculate bleu loss per sample in batch
-    # Sum and add length normalized sum to val_loss
-    batch_bleu = 0.0
-    for pred_id in range(len(preds)):
-        pred = preds[pred_id].cpu().numpy().astype(int)
-        pred_embed = val_loader.dataset.vocab.decode(pred, clean=True)
-        batch_bleu += val_loader.dataset.vocab.evaluate(
-            refs[pred_id], pred_embed)
-    val_bleu += (batch_bleu / len(preds))
+    # Loop through val batcbes
+    for val_id, val_batch in enumerate(val_loader):
+        idxs, im_embeddings, caption_embeddings = val_batch
 
-    # Get training statistics
-    stats = "Validation step [%d/%d], Bleu: %.4f" \
-        % (val_id, val_loader.dataset.get_seq_len(),
-           batch_bleu / len(preds))
+        if torch.cuda.is_available():
+            im_embeddings = im_embeddings.cuda()
+            caption_embeddings = caption_embeddings.cuda()
 
-    print("\r" + stats, end="")
-    sys.stdout.flush()
+        # Get ground truth captions
+        refs = val_loader.dataset.get_references(idxs.numpy())
 
-    if val_id % 250 == 0:
-        print('\r' + stats)
+        preds = captioner.predict(im_embeddings, beam_size=args.beam_size)
 
-val_bleu /= val_loader.dataset.get_seq_len()
-print("\nValidation -- bleu: %.4f" % (val_bleu))
+        # Calculate bleu loss per sample in batch
+        # Sum and add length normalized sum to val_loss
+        batch_bleu = 0.0
+        for pred_id in range(len(preds)):
+            pred = preds[pred_id].cpu().numpy().astype(int)
+            pred_embed = val_loader.dataset.vocab.decode(
+                pred, clean=True)
+            batch_bleu += val_loader.dataset.vocab.evaluate(
+                refs[pred_id], pred_embed)
+        val_bleu += (batch_bleu / len(preds))
+
+        # Get training statistics
+        stats = "Validation step [%d/%d], Bleu: %.4f" \
+            % (val_id, val_loader.dataset.get_seq_len(),
+               batch_bleu / len(preds))
+
+        print("\r" + stats, end="")
+        sys.stdout.flush()
+
+        if val_id % 250 == 0:
+            print('\r' + stats)
+
+    val_bleu /= val_loader.dataset.get_seq_len()
+    print("\nValidation -- bleu: %.4f" % (val_bleu))
+
+
+if __name__ == '__main__':
+    # Training parameters
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_path', type=str, required=True,
+                        help='Path to trained model')
+    parser.add_argument('--beam_size', type=str, required=False,
+                        help='Beam size to use during validation',
+                        default=None)
+    parser.add_argument('--vocab_path', type=str, required=False,
+                        help='Path to vocab file',
+                        default='data/processed/coco_vocab.pkl')
+    parser.add_argument('--captions_path', type=str, required=False,
+                        help='Path to COCO captions csv',
+                        default=os.environ['HOME'] +
+                        '/programs/cocoapi/annotations/' +
+                        'coco_captions.csv')
+    parser.add_argument('--images_path', type=str, required=False,
+                        help='Path to COCO images',
+                        default=os.environ['HOME'] +
+                        '/Database/coco/images/')
+    parser.add_argument('--lr', type=float, required=False,
+                        help='Learning rate',
+                        default=0.001)
+    parser.add_argument('--val_interval', type=int, required=False,
+                        help='Frequency of epochs to validate',
+                        default=10)
+    parser.add_argument('--save_int', type=int, required=False,
+                        help='Frequency of epochs to save checkpoint',
+                        default=10)
+    parser.add_argument('--num_epochs', type=int, required=False,
+                        help='Number of epochs',
+                        default=1000)
+    parser.add_argument('--initial_checkpoint_file', type=str,
+                        required=False, help='starting checkpoint file',
+                        default=None)
+    parser.add_argument('--version', type=int, required=False,
+                        help='Tag for current model',
+                        default=11)
+    parser.add_argument('--batch_size', type=int, required=False,
+                        help='Batch size',
+                        default=64)
+    parser.add_argument('--coco_set', type=int, required=False,
+                        help='coco set year to use (2014/2017)',
+                        default=2014)
+    parser.add_argument('--load_features', type=bool, required=False,
+                        help='Load image features or generate',
+                        default=True)
+    parser.add_argument('--load_captions', type=bool, required=False,
+                        help='Load captions from file or generate',
+                        default=True)
+    parser.add_argument('--preload', type=bool, required=False,
+                        help='Load all captions/images at start',
+                        default=True)
+    parser.add_argument('--base_model', type=str, required=False,
+                        help='Base model for CNN',
+                        default='resnet152')
+    parser.add_argument('--embedding_size', type=int, required=False,
+                        help='Image embedding size',
+                        default=2048)
+    parser.add_argument('--embed_size', type=int, required=False,
+                        help='Embedding size for RNN input',
+                        default=256)
+    parser.add_argument('--hidden_size', type=int, required=False,
+                        help='Hidden size for RNN',
+                        default=512)
+    parser.add_argument('--rnn_type', type=int, required=False,
+                        help='Type of RNN unit',
+                        default='lstm')
+    args = parser.parse_args()
+    main(args)

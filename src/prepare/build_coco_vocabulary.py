@@ -65,6 +65,7 @@ def main(args):
 
     Args:
         args: commandline arguments
+
     """
     # Load coco library
     sys.path.append(args.coco_path + '/PythonAPI')
