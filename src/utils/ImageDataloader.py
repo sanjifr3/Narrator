@@ -42,9 +42,9 @@ def get_image_dataloader(mode='train',
                          model='resnet152',
                          num_workers=0):
     """
-    Generate a dataload with the specified parameters.
+    Generate a dataloader with the specified parameters.
 
-    Params:
+    Args:
         mode: Dataset type to load
         coco_set: COCO dataset year to load
         images_path: Path to COCO dataset images
@@ -67,19 +67,21 @@ def get_image_dataloader(mode='train',
     """
     # Ensure that specified mode is valid
     try:
-        assert(mode in ['train', 'val', 'test'])
-        assert(coco_set in [2014, 2017])
-        assert(os.path.exists(images_path))
-        assert(os.path.exists(vocab_path))
-        assert(os.path.exists(captions_path))
+        assert mode in ['train', 'val', 'test']
+        assert coco_set in [2014, 2017]
+        assert os.path.exists(images_path)
+        assert os.path.exists(vocab_path)
+        assert os.path.exists(captions_path)
     except AssertionError:
         # Defaulting conditions
         if mode not in ['train', 'val', 'test']:
-            print('Invalid mode specified: {}. Defaulting to val mode'.format(mode))
+            print('Invalid mode specified: ' +
+                  '{}. Defaulting to val mode'.format(mode))
             mode = 'val'
         if coco_set not in [2014, 2017]:
-            print('Invalid coco year specified: {}. Defaulting to 2014'.format(coco_set))
-            year = 2014
+            print('Invalid coco year specified: ' +
+                  '{}. Defaulting to 2014'.format(coco_set))
+            coco_set = 2014
 
         # Terminating conditions
         if not os.path.exists(images_path):
@@ -87,8 +89,10 @@ def get_image_dataloader(mode='train',
             return None
         elif not os.path.exists(vocab_path):
             print(vocab_path + " does not exist!")
-        elif not os.path.exists(caption_path):
-            print(caption_path + " does not exist!")
+            return None
+        elif not os.path.exists(captions_path):
+            print(captions_path + " does not exist!")
+            return None
 
     # Generate dataset
     data = ImageDataset(mode, coco_set, images_path, vocab_path,
@@ -124,16 +128,7 @@ def get_image_dataloader(mode='train',
 
 
 def reset_dataloader(data_loader):
-    """
-    Resets sampler for dataloader.
-
-    Params:
-        dataloader: Makes dataloader
-
-    Returns:
-        dataloader: Returns dataloader
-
-    """
+    """Resets sampler for dataloader."""
     indices = data_loader.dataset.get_indices()
     new_sampler = sampler.SubsetRandomSampler(indices=indices)
     data_loader.batch_sampler.sampler = new_sampler
@@ -165,8 +160,8 @@ class ImageDataset(Dataset):
         num_batches = int(np.floor(len(self.files) / float(self.batch_size)))
         if len(self.files) % self.batch_size != 0:
             return num_batches + 1
-        else:
-            return num_batches
+
+        return num_batches
 
     def get_indices(self):
         """Returns idxs of all image files."""
@@ -174,7 +169,8 @@ class ImageDataset(Dataset):
 
     def get_references(self, ids):
         """Get all captions for given ids."""
-        return [self.df[self.df['id'] == idx]['decoded_caption'].values.tolist() for idx in ids]
+        return [self.df[self.df['id'] == idx]
+                ['decoded_caption'].values.tolist() for idx in ids]
 
     def __init__(self,
                  mode='train',
@@ -191,9 +187,9 @@ class ImageDataset(Dataset):
                  preload=False,
                  model='resnet152'):
         """
-        Returns idxs of all image files.
+        Construct the ImageDataset class.
 
-        Params:
+        Args:
             mode: Dataset type to load
             coco_set: COCO dataset year to load
             images_path: Path to COCO dataset images
@@ -205,7 +201,8 @@ class ImageDataset(Dataset):
             num_captions: Number of captions per image in dataset
             load_features: Boolean for creating or loading image features
             load_captions: Boolean for creating or loading image captions
-            preload: Boolean for either preloading data into RAM during construction
+            preload: Boolean for either preloading data into RAM
+                during construction
             model: base model for encoderCNN
 
         """
@@ -219,6 +216,7 @@ class ImageDataset(Dataset):
             print("Defaulting to train mode")
             mode = 'train'
 
+        # Make val synonymous with dev
         if mode == 'dev':
             mode = 'val'
 
@@ -257,7 +255,8 @@ class ImageDataset(Dataset):
 
         # Encode captions into a fixed length embedding, drop any captions >
         # max_len
-        if not load_captions or 'embedded_caption' not in self.df.columns.values:
+        if (not load_captions or
+                'embedded_caption' not in self.df.columns.values):
             self.df['embedded_caption'] = self.df['caption'].apply(
                 lambda x: self.vocab.encode(x, max_len + 1))
             self.df = self.df[self.df['embedded_caption'].apply(
@@ -284,7 +283,8 @@ class ImageDataset(Dataset):
         # print(len(self.df))
         # print
         self.df = self.df[self.df['filename'] !=
-                          'train2014/COCO_train2014_000000167126_' + model + '.pkl']
+                          'train2014/COCO_train2014_000000167126_'
+                          + model + '.pkl']
         # print(len(self.df))
 
         self.files = self.df['id'].unique()
@@ -297,7 +297,9 @@ class ImageDataset(Dataset):
                 len(self.files), num_captions, max_len)
 
             for i, im_id in enumerate(self.files):
-                with open(self.images_path + self.df[self.df['id'] == im_id]['filename'].values[0], 'rb') as f:
+                with open(self.images_path +
+                          self.df[self.df['id'] == im_id]
+                          ['filename'].values[0], 'rb') as f:
                     self.im_embeddings[i] = pickle.load(f)
 
                 # Get captions for image
@@ -307,7 +309,8 @@ class ImageDataset(Dataset):
                 # Sample randomly or crop to get num_captions captions
                 while len(cap_embeddings) < num_captions:
                     cap_embeddings.append(
-                        cap_embeddings[np.random.randint(0, len(cap_embeddings))])
+                        cap_embeddings[
+                            np.random.randint(0, len(cap_embeddings))])
                 if len(cap_embeddings) > num_captions:
                     cap_embeddings = cap_embeddings[:num_captions]
 
@@ -319,61 +322,68 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, ix):
         """
-        Returns image id, image embedding, and captions for given index.
+        Returns image id, image embedding, and captions for given \
+            index.
 
-        If in training mode, return a random sample. Otherwise, 
-        return all samples for given sample.
+        If in training mode, return a random caption sample.
+        Otherwise, return all captions for a given ix.
 
         Args:
             ix: Batch index
 
         """
-
         im_id = self.files[ix]
 
         if self.preload:
             # Select random caption index
             cap_ix = np.random.randint(0, self.num_captions)
             if self.mode == 'train':
-                return im_id, self.im_embeddings[ix], self.cap_embeddings[ix, cap_ix].long()
-            else:
-                return im_id, self.im_embeddings[ix], self.cap_embeddings[ix].long()
+                return (im_id, self.im_embeddings[ix],
+                        self.cap_embeddings[ix, cap_ix].long())
+
+            return (im_id, self.im_embeddings[ix],
+                    self.cap_embeddings[ix].long())
+        # Load, preprocess image, and extract features with CNN
+        if self.load_features:
+            try:
+                with open(self.images_path +
+                          self.df[self.df['id'] == im_id]
+                          ['filename'].values[0], 'rb') as f:
+                    im = pickle.load(f)
+            except FileNotFoundError as e:
+                print(e)
+                print(im_id)
         else:
-            # Load, preprocess image, and extract features with CNN
-            if self.load_features:
-                try:
-                    with open(self.images_path + self.df[self.df['id'] == im_id]['filename'].values[0], 'rb') as f:
-                        im = pickle.load(f)
-                except FileNotFoundError as e:
-                    print(e)
-                    print(im_id)
+            # Load and process image
+            im = PIL.Image.open(
+                self.images_path +
+                self.df[self.df['id'] == im_id]
+                ['filename'].values[0]).convert('RGB')
+            if torch.cuda.is_available():
+                im = self.transformer(im).cuda().unsqueeze(0)
             else:
-                # Load and process image
-                im = PIL.Image.open(
-                    self.images_path + self.df[self.df['id'] == im_id]['filename'].values[0]).convert('RGB')
-                if torch.cuda.is_available():
-                    im = self.transformer(im).cuda().unsqueeze(0)
-                else:
-                    im = self.transformer(im).unsqueeze(0)
-                im = self.encoder(im)
+                im = self.transformer(im).unsqueeze(0)
+            im = self.encoder(im)
 
-            captions = self.df[self.df['id'] == im_id][
-                'embedded_caption'].values
+        captions = self.df[self.df['id'] == im_id][
+            'embedded_caption'].values
 
-            if self.mode == 'train':
-                # Randomly select caption
-                cap_ix = np.random.randint(0, len(captions))
-                return im_id, im, torch.Tensor(captions[cap_ix]).long()
+        if self.mode == 'train':
+            # Randomly select caption
+            cap_ix = np.random.randint(0, len(captions))
+            return (im_id, im,
+                    torch.Tensor(captions[cap_ix]).long())
 
-            else:
-                captions = captions.tolist()
-                while len(captions) < self.num_captions:
-                    captions.append(
-                        captions[np.random.randint(0, len(captions))])
-                if len(captions) > self.num_captions:
-                    captions = captions[:self.num_captions]
+        captions = captions.tolist()
+        while len(captions) < self.num_captions:
+            captions.append(
+                captions[np.random.randint(0, len(captions))])
+        if len(captions) > self.num_captions:
+            captions = captions[:self.num_captions]
 
-                return vid_id, vid_array, torch.Tensor(np.vstack(captions)).long()
+        return (im_id, im,
+                torch.Tensor(np.vstack(captions)).long())
 
     def __len__(self):
+        """Get number of images."""
         return len(self.files)
