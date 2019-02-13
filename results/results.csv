@@ -13,7 +13,7 @@ MSR-VTT,image_caption-model1-185-0.3041-6.3487.pkl,0.3050,0.3137,0.3196
 MSR-VTT,image_caption-model3-80-0.1883-5.2119.pkl,0.0528,0.0537,0.0514
 MSR-VTT,video_caption-model10-45-0.3175-5.0.pkl,0.2831,0.3102,0.3184
 COCO,image_caption-model4-20-0.1328-5.0.pkl,0.1230,0.1323
-COCO,image_caption-model4-70-0.1317-5.0.pkl,
+COCO,image_caption-model4-70-0.1317-5.0.pkl,0.1220,0.1301
 COCO,image_caption-model4-30-0.1313-5.0.pkl,
 COCO,image_caption-model10-80-0.1179-5.0.pkl,
 COCO,image_caption-model11-20-0.1226-4.64.pkl,
@@ -29,7 +29,3 @@ COCO,image_caption-model2-20-0.1852-4.8039.pkl,
 COCO,image_caption-model3-25-0.1895-4.7424.pkl,
 COCO,image_caption-model3-80-0.1883-5.2119.pkl,
 COCO,image_caption-model3-50-0.1871-5.0162.pkl,
-
-
-
-
