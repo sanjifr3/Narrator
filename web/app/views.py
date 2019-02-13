@@ -49,7 +49,7 @@ if len(app.config['SAMPLES_TO_UPDATE']) > 0:
 
     for i, (name, im_id) in enumerate(zip(im_names,rand_im_ids)):
         url = coco.loadImgs(im_id)[0]['coco_url']
-        caption = narrator.genCaption(url, beam_size=8)
+        caption = narrator.gen_caption(url, beam_size=8)
     
         gts = cocoCaptionDF[cocoCaptionDF['id'] == im_id]['caption']
         gts = gts.apply(lambda x: narrator.coco_vocab.encode(x, app.config['MAX_LEN']+1))
@@ -67,8 +67,8 @@ if len(app.config['SAMPLES_TO_UPDATE']) > 0:
     
         im = PIL.Image.fromarray(io.imread(url)).convert('RGB') 
         im.save(app.config['SAMPLES_DIR'] + name + '.jpg')
-        narrator.genAudioFile(gt, app.config['SAMPLES_DIR'] + name + '_gt.ogg')
-        narrator.genAudioFile(caption, app.config['SAMPLES_DIR'] + name + '.ogg')
+        narrator.gen_audio_file(gt, app.config['SAMPLES_DIR'] + name + '_gt.ogg')
+        narrator.gen_audio_file(caption, app.config['SAMPLES_DIR'] + name + '.ogg')
 
         samplesDF.loc[name,'id'] = im_id
         samplesDF.loc[name,'caption'] = caption
@@ -78,7 +78,7 @@ if len(app.config['SAMPLES_TO_UPDATE']) > 0:
 
     for i, (name, vid_id) in enumerate(zip(vid_names,rand_vid_ids)):
         url = app.config['MSRVTT_DATA_PATH'] + vid_id + '.mp4'
-        caption = narrator.genCaption(url, beam_size=8)
+        caption = narrator.gen_caption(url, beam_size=8)
     
         gts = msrvttCaptionDF[msrvttCaptionDF['vid_id'] == vid_id]['caption']
         gts = gts.apply(lambda x: narrator.msrvtt_vocab.encode(x, app.config['MAX_LEN']+1))
@@ -95,8 +95,8 @@ if len(app.config['SAMPLES_TO_UPDATE']) > 0:
         caption = ' '.join(caption).capitalize()
 
         shutil.copy(url, app.config['SAMPLES_DIR'] + name + '.mp4')
-        narrator.genAudioFile(gt, app.config['SAMPLES_DIR'] + name + '_gt.ogg')
-        narrator.genAudioFile(caption, app.config['SAMPLES_DIR'] + name + '.ogg')
+        narrator.gen_audio_file(gt, app.config['SAMPLES_DIR'] + name + '_gt.ogg')
+        narrator.gen_audio_file(caption, app.config['SAMPLES_DIR'] + name + '.ogg')
 
         samplesDF.loc[name,'id'] = vid_id
         samplesDF.loc[name,'caption'] = caption
@@ -135,7 +135,7 @@ print ("Samples loaded")
 scene_example_file = app.config['SAMPLES_DIR'] + app.config['SCENE_EXAMPLE_FILE']
 
 if not os.path.exists(scene_example_file + '.csv'):
-  captions, scene_change_timecodes = narrator.genCaption(scene_example_file + '.mp4', by_scene=True, as_string=True)  
+  captions, scene_change_timecodes = narrator.gen_caption(scene_example_file + '.mp4', by_scene=True, as_string=True)  
   sceneSamplesDF = pd.DataFrame({
     'time': scene_change_timecodes,
     'caption': captions
@@ -144,7 +144,7 @@ if not os.path.exists(scene_example_file + '.csv'):
   sceneSamplesDF['caption'] = sceneSamplesDF['caption'].apply(lambda x: x.capitalize())
 
   for i, caption in enumerate(captions):
-    narrator.genAudioFile(caption, scene_example_file + '.' + str(i) + '.ogg')
+    narrator.gen_audio_file(caption, scene_example_file + '.' + str(i) + '.ogg')
 
   sceneSamplesDF.to_csv(scene_example_file + '.csv', index=False)
 else:
@@ -210,19 +210,19 @@ def demo():
           by_scene = False
 
         if not by_scene:
-          caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
+          caption = narrator.gen_caption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
 
           cap_audio = filename + '.ogg'
-          narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+          narrator.gen_audio_file(caption, app.config['UPLOAD_DIR'] + cap_audio)
           
           return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
 
         else:
-          captions, time_codes = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
+          captions, time_codes = narrator.gen_caption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
 
           scenes_dict = []
           for i, caption in enumerate(captions):
-            narrator.genAudioFile(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
+            narrator.gen_audio_file(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
             scenes_dict.append({
               'time': time_codes[i],
               'cap_audio': filename + '.' + str(i) + '.ogg',
@@ -257,19 +257,19 @@ def uploaded_file(filename, typ='image', caption="", cap_audio=None):
           by_scene = False
 
         if not by_scene:
-          caption = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
+          caption = narrator.gen_caption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene).capitalize()
 
           cap_audio = filename + '.ogg'
-          narrator.genAudioFile(caption, app.config['UPLOAD_DIR'] + cap_audio)
+          narrator.gen_audio_file(caption, app.config['UPLOAD_DIR'] + cap_audio)
           
           return redirect(url_for('uploaded_file', filename=file.filename, cap_audio=cap_audio, caption=caption, typ=typ))
 
         else:
-          captions, time_codes = narrator.genCaption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
+          captions, time_codes = narrator.gen_caption(file_path, beam_size=app.config['BEAM_SIZE'], as_string=True, by_scene=by_scene)
 
           scenes_dict = []
           for i, caption in enumerate(captions):
-            narrator.genAudioFile(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
+            narrator.gen_audio_file(caption,  app.config['UPLOAD_DIR'] + filename + '.' + str(i) + '.ogg')
             scenes_dict.append({
               'time': time_codes[i],
               'cap_audio': filename + '.' + str(i) + '.ogg',
