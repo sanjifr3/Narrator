@@ -25,7 +25,10 @@ narrator = Narrator(
     msrvtt_vocab_path = app.config['MSRVTT_VOCAB_PATH'],
     base_model = app.config['ENCODER_MODEL'],
     ic_model_path = app.config['IC_MODEL_PATH'],
-    vc_model_path = app.config['VC_MODEL_PATH'])
+    vc_model_path = app.config['VC_MODEL_PATH'],
+    ic_rnn_type = app.config['IC_RNN_TYPE'],
+    vc_rnn_type = app.config['VC_RNN_TYPE']
+)
 
 try:
   samplesDF = pd.read_csv(app.config['SAMPLES_DIR'] + 'sample_captions.csv', index_col=0)

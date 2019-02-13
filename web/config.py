@@ -18,7 +18,9 @@ class Config(object):
   MSRVTT_VOCAB_PATH = 'data/processed/msrvtt_vocab.pkl'
   ENCODER_MODEL = 'resnet152'
   IC_MODEL_PATH = 'models/image_caption-model3-25-0.1895-4.7424.pkl'
-  VC_MODEL_PATH = 'models/video_caption-model4-480-0.3936-5.0.pkl'
+  VC_MODEL_PATH = 'models/video_caption-model11-160-0.3501-5.0.pkl'
+  VC_RNN_TYPE = 'gru'
+  IC_RNN_TYPE = 'lstm'
   MSRVTT_CAPTION_PATH = os.path.join(basedir + '/../data/processed/msrvtt_captions.csv')
   MSRVTT_DATA_PATH = os.environ['HOME'] + '/Database/MSR-VTT/train-video/'
   BEAM_SIZE = 5

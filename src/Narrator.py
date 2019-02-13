@@ -63,13 +63,15 @@ class Narrator(object):
                  msrvtt_vocab_path='data/processed/msrvtt_vocab.pkl',
                  base_model='resnet152',
                  ic_model_path='models/image_caption-model3-25-0.1895-4.7424.pkl',
-                 vc_model_path='models/video_caption-model4-480-0.3936-5.0.pkl',
+                 vc_model_path='models/video_caption-model11-160-0.3501-5.0.pkl',
                  im_embedding_size=2048,
                  vid_embedding_size=2048,
                  embed_size=256,
                  hidden_size=512,
                  num_frames=40,
                  max_caption_length=35,
+                 ic_rnn_type='lstm',
+                 vc_rnn_type='gru',
                  im_res=224):
         """
         Construct the Narrator class.
@@ -112,6 +114,7 @@ class Narrator(object):
             embed_size,
             hidden_size,
             len(self.coco_vocab),
+            rnn_type=ic_rnn_type,
             start_id=self.coco_vocab.word2idx[self.coco_vocab.start_word],
             end_id=self.coco_vocab.word2idx[self.coco_vocab.end_word]
         )
@@ -125,6 +128,7 @@ class Narrator(object):
             embed_size,
             hidden_size,
             len(self.msrvtt_vocab),
+            rnn_type=vc_rnn_type,
             start_id=self.msrvtt_vocab.word2idx[self.msrvtt_vocab.start_word],
             end_id=self.msrvtt_vocab.word2idx[self.msrvtt_vocab.end_word]
         )
@@ -198,6 +202,10 @@ class Narrator(object):
             scene_change_timecodes = [
                 scene[0].get_timecode()[:-4] for scene in scenes]
             scene_change_idxs = [scene[0].get_frames() for scene in scenes]
+            
+            if len(scene_change_idxs) == 0:
+                scene_change_timecodes = ['00:00:00']
+                scene_change_idxs = [0]
         else:
             scene_change_timecodes = ['00:00:00']
             scene_change_idxs = [0]
