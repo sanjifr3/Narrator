@@ -1,31 +1,44 @@
-dataset,model,0,3,5
-MSR-VTT,video_caption-model3-515-0.3282-6.2535.pkl,0.2948,0.3132,0.3056
-MSR-VTT,video_caption-model3-600-0.3131-6.3739.pkl,0.2698,0.2913,0.2901
-MSR-VTT,video_caption-model3-660-0.3079-6.2516.pkl,0.2578,2760,0.2717
-MSR-VTT,video_caption-model4-480-0.3936-5.0.pkl,0.2721,0.3079,0.3009
-MSR-VTT,video_caption-model4-370-0.3931-5.0.pkl,0.2837,0.3155,0.3167
-MSR-VTT,video_caption-model4-360-0.3804-5.0.pkl,0.269,0.2936,0.2984
-MSR-VTT,video_caption-model8-495-0.3095-5.0.pkl,0.2776,0.3138,0.3094
-MSR-VTT,video_caption-model11-160-0.3501-5.0.pkl,0.3174,0.3468,0.3507
-MSR-VTT,video_caption-model11-70-0.347-5.0.pkl,0.3021,0.3276,0.3478
-MSR-VTT,video_caption-model12-170-0.3151-5.0.pkl,0.2702,0.308,0.3172
-MSR-VTT,image_caption-model1-185-0.3041-6.3487.pkl,0.305,0.3137,0.3196
-MSR-VTT,image_caption-model3-80-0.1883-5.2119.pkl,0.0528,0.0537,0.0514
-MSR-VTT,video_caption-model10-45-0.3175-5.0.pkl,0.2831,0.3102,0.3184
-COCO,image_caption-model4-20-0.1328-5.0.pkl,0.123,0.1323,
-COCO,image_caption-model4-70-0.1317-5.0.pkl,0.122,0.1301,
-COCO,image_caption-model4-30-0.1313-5.0.pkl,0.1224,0.1303,
-COCO,image_caption-model10-80-0.1179-5.0.pkl,0.1076,0.1171,
-COCO,image_caption-model11-20-0.1226-4.64.pkl,0.1222,0.1311,
-COCO,image_caption-model11-120-0.1214-5.257.pkl,0.1223,0.1302,
-,,,,
-,,,,
-COCO,image_caption-model1-185-0.3041-6.3487.pkl,,,
-COCO,image_caption-model1-24-0.1864-0.7082.pkl,,,
-COCO,image_caption-model1-23-0.1833-0.7189.pkl,,,
-COCO,image_caption-model1-22-0.1831-0.7195.pkl,,,
-COCO,image_caption-model2-10-0.1863-4.3578.pkl,,,
-COCO,image_caption-model2-20-0.1852-4.8039.pkl,,,
-COCO,image_caption-model3-25-0.1895-4.7424.pkl,,,
-COCO,image_caption-model3-80-0.1883-5.2119.pkl,,,
-COCO,image_caption-model3-50-0.1871-5.0162.pkl,,,
+dataset,model,type,0,3,5
+MSR-VTT,video_caption-model3-515-0.3282-6.2535.pkl,LSTM (embed size: 256),0.2948,0.3132,0.3056
+MSR-VTT,video_caption-model3-600-0.3131-6.3739.pkl,LSTM (embed size: 256),0.2698,0.2913,0.2901
+MSR-VTT,video_caption-model3-660-0.3079-6.2516.pkl,LSTM (embed size: 256),0.2578,2760,0.2717
+MSR-VTT,video_caption-model4-480-0.3936-5.0.pkl,LSTM (embed size: 256),0.2721,0.3079,0.3009
+MSR-VTT,video_caption-model4-370-0.3931-5.0.pkl,LSTM (embed size: 256),0.2837,0.3155,0.3167
+MSR-VTT,video_caption-model4-360-0.3804-5.0.pkl,LSTM (embed size: 256),0.269,0.2936,0.2984
+MSR-VTT,video_caption-model8-495-0.3095-5.0.pkl,Pre-trained COCO,0.2776,0.3138,0.3094
+MSR-VTT,video_caption-model11-160-0.3501-5.0.pkl,GRU,0.3174,0.3468,0.3507
+MSR-VTT,video_caption-model11-70-0.347-5.0.pkl,GRU,0.3021,0.3276,0.3478
+MSR-VTT,video_caption-model12-170-0.3151-5.0.pkl,LSTM (embed_size: 512),0.2702,0.308,0.3172
+MSR-VTT,image_caption-model1-185-0.3041-6.3487.pkl,LSTM (embed size: 256),0.305,0.3137,0.3196
+MSR-VTT,image_caption-model3-80-0.1883-5.2119.pkl,LSTM (embed size: 256),0.0528,0.0537,0.0514
+MSR-VTT,video_caption-model10-45-0.3175-5.0.pkl,VGG16,0.2831,0.3102,0.3184
+,,,,,
+,,,,,
+COCO,image_caption-model4-20-0.1328-5.0.pkl,LSTM (embed size: 256),0.123,0.1323,
+COCO,image_caption-model4-70-0.1317-5.0.pkl,,0.122,0.1301,
+COCO,image_caption-model4-30-0.1313-5.0.pkl,,0.1224,0.1303,
+COCO,image_caption-model10-80-0.1179-5.0.pkl,VGG16,0.1076,0.1171,
+COCO,image_caption-model11-20-0.1226-4.64.pkl,GRU,0.1222,0.1311,
+COCO,image_caption-model11-120-0.1214-5.257.pkl,GRU,0.1223,0.1302,
+,,,,,
+,,,,,
+COCO,image_caption-model1-185-0.3041-6.3487.pkl,,,,
+COCO,image_caption-model1-24-0.1864-0.7082.pkl,,,,
+COCO,image_caption-model1-23-0.1833-0.7189.pkl,,,,
+COCO,image_caption-model1-22-0.1831-0.7195.pkl,,,,
+COCO,image_caption-model2-10-0.1863-4.3578.pkl,,,,
+COCO,image_caption-model2-20-0.1852-4.8039.pkl,,,,
+COCO,image_caption-model3-25-0.1895-4.7424.pkl,,,,
+COCO,image_caption-model3-80-0.1883-5.2119.pkl,,,,
+COCO,image_caption-model3-50-0.1871-5.0162.pkl,,,,
+,,,,,
+,,,,,
+Model,Architecture | CNN | Initialization,,,,
+Video,GRU (embed: 256) | Resnet152 | Random,0.3174,0.3468,0.3507,
+,LSTM (embed: 256) | Resnet152 | Random,0.305,0.3137,0.3196,
+,LSTM (embed: 256) | VGG16 | Random,0.2831,0.3102,0.3184,
+,LSTM (embed: 512) | Resnet152 | Random,0.2702,0.308,0.3172,
+,LSTM (embed: 256) | Resnet152 | Pre-trained COCO,0.2776,0.3138,0.3094,
+Image,LSTM (embed: 256) | Resnet152 | Random,0.123,0.1323,,
+,GRU (embed: 256) | Resnet152 | Random,0.1222,0.1311,,
+,LSTM (embed: 256) | VGG16 | Random,0.1076,0.1171,,

@@ -45,7 +45,6 @@
               <nav>
                 <ul class="nav masthead-nav">
                   <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
-                  <li><a href="{{ url_for('about') }}">About</a></li>
                   <li><a href="{{ url_for('images') }}">Image Examples</a></li>
                   <li><a href="{{ url_for('videos') }}">Video Examples</a></li>
                   <li><a href="{{ url_for('scenes') }}">Scene Examples</a></li>
@@ -58,9 +57,9 @@
           <div class="inner cover">
             <h1 class="cover-heading"><div style="font-size: 125%">{{ title }}</h1>
             <!-- A project for Insight Data Science.   -->
-            <p class="lead">An automatic image & video description generator using artificial intelligence.</p>
+            <p class="lead">A scene description generator.</p>
             <p class="lead">
-              <a href="{{ url_for('about') }}" class="btn btn-lg btn-default">Learn more</a>
+              <a href="{{ url_for('images') }}" class="btn btn-lg btn-default">Learn more</a>
             </p>
           </div>
 

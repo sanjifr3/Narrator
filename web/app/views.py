@@ -256,12 +256,6 @@ def index():
     return render_template('main.html', page='main', title=app.config['TITLE'])
 
 
-@app.route('/about')
-def about():
-    """Render about page."""
-    return render_template('about.html', page='about', title=app.config['TITLE'])
-
-
 @app.route('/images')
 def images():
     """Render image examples page."""

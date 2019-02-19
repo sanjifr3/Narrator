@@ -95,9 +95,7 @@
   <meta name="author" content="Sanjif Rajaratnam">
   <link rel="icon" href="../static/favicon.ico">
 
-  {% if page == "about" %}
-  <title>{{ title }}</title>
-  {% elif page == "images" %}
+  {% if page == "iamges" %}
   <title>{{ title }} - Image Examples</title>
   {% elif page == "videos" %}
   <title>{{ title }} - Video Examples</title>
@@ -138,23 +136,10 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ url_for('about') }}">{{ title }}</a>
+        <a class="navbar-brand" href="{{ url_for('index') }}">{{ title }}</a>
       </div>
       <div id="navbar" class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
-          <!-- Home page -->
-<!--            {% if page == "home" %}
-            <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
-          {% else %}
-            <li><a href="{{ url_for('index') }}">Home</a></li>
-          {% endif %} -->
-
-          <!-- About page -->
-          {% if page == "about" %}
-            <li class="active"><a href="{{ url_for('about') }}">About</a></li>
-          {% else %}
-            <li><a href="{{ url_for('about') }}">About</a></li>
-          {% endif %}
 
           <!-- Image Examples page -->
           {% if page == "images" %}
