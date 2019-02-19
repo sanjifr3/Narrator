@@ -86,21 +86,21 @@ pip install -r requirements.txt
 
 ### Image description model
 
-|Architecture      |CNN       |Initialization   ||Greedy |Beam = 3 |
-|---               |---       |---              ||---    |---      |
-|LSTM (embed: 256) |Resnet152 |Random           ||0.123  |0.132    |
-|GRU (embed:256)   |Resnet152 |Random           ||0.122  |0.131    |
-|LSTM (embed: 256) |VGG16     |Random           ||0.108  |0.117    |
+| **Architecture** | **CNN** | **Initialization** | **Greedy** | **Beam = 3** |
+| --- | --- | --- | --- | --- |
+| LSTM (embed: 256) | Resnet152 | Random | 0.123 | 0.132 |
+| GRU (embed:256)   | Resnet152 | Random | 0.122 | 0.131 |
+| LSTM (embed: 256) | VGG16 | Random | 0.108 | 0.117 |
 
 ### Video description model
 
-|Architecture      |CNN       |Initialization   ||Greedy |Beam = 5 |
-|---               |---       |---              ||---    |---      |
-|GRU (embed:256)   |Resnet152 |Random           ||0.317  |0.351    |
-|LSTM (embed: 256) |Resnet152 |Random           ||0.305  |0.320    |
-|LSTM (embed: 256) |VGG16     |Random           ||0.283  |0.318    |
-|LSTM (embed: 512) |Resnet152 |Random           ||0.270  |0.317    |
-|LSTM (embed: 256) |Resnet152 |Pre-trained COCO ||0.278  |0.310    |
+| **Architecture** | **CNN** | **Initialization** | **Greedy** | **Beam = 3** |
+| --- | --- | --- | --- | --- |
+| GRU (embed:256) | Resnet152 |Random | 0.317  | 0.351 |
+| LSTM (embed: 256) | Resnet152 |Random | 0.305 | 0.320 |
+| LSTM (embed: 256) | VGG16 |Random | 0.283 | 0.318 |
+| LSTM (embed: 512) | Resnet152 |Random | 0.270 | 0.317 |
+| LSTM (embed: 256) | Resnet152 |Pre-trained COCO | 0.278 |0.310 |
 
 <!-- ## How to train
 
