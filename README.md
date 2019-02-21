@@ -32,7 +32,8 @@ The video description network is trained using the MSR-VTT dataset.
     ├── notebooks          <- Example Jupyter notebook + notebooks for validation
     │   ├── Narrator-Usage-Examples.ipynb        <- Examples of how to use Narrator independently of the web interface
     │   ├── Image-Captioner-Validation.ipynb     <- Notebook for validating image captioner model
-    │   └── Video-Captioner-Validation.ipynb     <- Notebook for validating video captioner model
+    │   ├── Video-Captioner-Validation.ipynb     <- Notebook for validating video captioner model
+    │   └── Data-Analysis.ipynb                  <- Notebook for analyzing image/data analysis
     │
     ├── results            <- Directory to store results
     │
