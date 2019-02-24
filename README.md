@@ -4,7 +4,7 @@
 
 The Narrator library generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video. 
 
-The Narrator is currently served in two ways: 1) a Flask web app currently being hosted on AWS and served via a [website](https://sraj.ca), and 2) a standalone library: Narrator.py. Examples of usage of the website can be seen on the website, and examples of using the library can be seen in notebooks/Narrator Usage Examples.ipynb.
+The Narrator is currently served in two ways: 1) a Flask web app currently being hosted on AWS and served via a [website](http://sraj.ca), and 2) a standalone library: Narrator.py. Examples of usage of the website can be seen on the website, and examples of using the library can be seen in notebooks/Narrator Usage Examples.ipynb.
 
 The Narrator library uses Amazon Polly to generate audio descriptions from text, and PySceneDetect for detecting scene changes within a video.
 
