@@ -2,15 +2,33 @@
 ### A scene description generator.
 ====================================================
 
-The Narrator library generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video. 
+The Narrator library generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video.
+
+The overall arctitecture for Narrator can be seen here:
+![alt_text](samples/narrator-architecture.jpg)
+
+The image description model architecture can be seen here:
+![alt text](samples/image-description-model.gif)
+
+The video description model architecture can be seen here:
+![alt text](samples/video-description-model.png)
 
 The Narrator is currently served in two ways: 1) a Flask web app currently being hosted on AWS and served via a [website](http://sraj.ca), and 2) a standalone library: Narrator.py. Examples of usage of the website can be seen on the website, and examples of using the library can be seen in notebooks/Narrator Usage Examples.ipynb.
 
 The Narrator library uses Amazon Polly to generate audio descriptions from text, and PySceneDetect for detecting scene changes within a video.
 
 The image description network is trained using the COCO 2014 dataset.
+
 The video description network is trained using the MSR-VTT dataset.
 
+### Pre-trained Models
+The current best pre-trained image description model can be downloaded from [here](https://drive.google.com/open?id=1bBaGTNBv3WsAYV-cGLIQeYw1C2EEZ3Sj).
+
+The current best pre-trained video description model can be downloaded from [here](https://drive.google.com/open?id=1-B2LKqYS6Z1ecWLmqxpUDo8ZztiWFtOo).
+
+Place these models in the models directory.
+
+## Table of Contents
 1. [Project organization](#project-organization)
 2. [Requirements](#requirements)
 3. [Performance](#performance)
