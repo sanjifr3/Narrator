@@ -6,11 +6,14 @@ This library and service was created with the intention of helping content creat
 
 The Narrator library generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video.
 
+
 The overall arctitecture for Narrator can be seen here:
 ![alt_text](samples/narrator-architecture.jpg)
 
+
 The image description model architecture can be seen here:
 ![alt text](samples/image-description-model.gif)
+
 
 The video description model architecture can be seen here:
 ![alt text](samples/video-description-model.png)
