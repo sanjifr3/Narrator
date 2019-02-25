@@ -239,7 +239,7 @@ def main(args):
                       (val_bleus[-1], val_losses[-1], train_losses[-1]))
 
         # Save checkpoint
-        if epoch > 0 and epoch % args.save_int == 0:
+        if epoch >= args.val_interval and epoch % args.save_interval == 0:
             filename = os.path.join(
                 args.models_path, "image_caption-model{}-{}-{}-{}.pkl".
                 format(args.version, epoch, round(val_bleus[-1], 4),
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     parser.add_argument('--val_interval', type=int, required=False,
                         help='Frequency of epochs to validate',
                         default=10)
-    parser.add_argument('--save_int', type=int, required=False,
+    parser.add_argument('--save_interval', type=int, required=False,
                         help='Frequency of epochs to save checkpoint',
                         default=10)
     parser.add_argument('--num_epochs', type=int, required=False,

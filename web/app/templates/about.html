@@ -2,13 +2,160 @@
 
 {% block content %}
 
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+
 <div class="container">
     
 <body>
 <div class='container'>
   <div class="starter-template">
-    More description about this service can be found on <a href="https://www.github.com/sanjifr3/narrator.git">github</a>.
-  </div>
+    <div style="text-align:left;">
+      The Narrator service was developed with the intention of helping content creators get AI generated auditory descriptions of scenes and images that they can use to make their content more accessible for people with vision impairment. This website showcases examples with <a href="{{ url_for('images') }}">images</a>, <a href="{{ url_for('videos') }}">videos</a>, and <a href="{{ url_for('scenes') }}">videos by scene</a>. Users can optinally upload images, or videos and get text and audio descriptions back on demand through the <a href="{{ url_for('demo') }}">Try it yourself!</a> section.
+    </div>
+
+    <br>
+
+    <div style="text-align:left;">
+      This service works by generating auditory descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video.
+    </div>
+
+    <h3 style="text-align:left;">Narrator Architecture</h3>
+    <div style="text-align:left;">
+      Narrator's overall architecture can be seen here:
+    </div>
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <img src="https://raw.githubusercontent.com/sanjifr3/Narrator/master/samples/narrator-architecture.jpg" style="width:75%">
+    </figure>
+
+    <h4 style="text-align: left;">Image/Video CNN-RNN Model Architectures</h4>
+    <div style="text-align:left;">
+      The image description model architecture can be seen here:
+    </div>
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <img src="https://raw.githubusercontent.com/sanjifr3/Narrator/master/samples/image-description-model.gif" style="width:75%">
+    </figure>
+
+    <br>
+
+    <div style="text-align:left;">
+      The video description model architecture can be seen here:
+    </div>
+    <figure>
+      <div style="width:image width px; text-align:center;">
+      <img src="https://raw.githubusercontent.com/sanjifr3/Narrator/master/samples/video-description-model.png" style="width:75%">
+    </figure>
+
+    <h3 style="text-align:left;">Narrator Serving</h3>
+    <div style="text-align:left;">
+      Narrator is currently served in two ways:
+      <br>
+      1) a Flask based web app currently hosted on AWS
+      <br>
+      2) a standalone Python class: Narrator.py (available via Github).
+      <br>
+      The audio is generated using <a href="https://aws.amazon.com/polly/">Amazon Polly</a> and the scenes are detected using <a href="https://pyscenedetect.readthedocs.io/en/latest/">PySceneDetect</a>.
+    </div>
+
+    <h3 style="text-align: left;">Performance</h3>
+    <div style="text-align:left;">
+      The BLEU-4 score for the various trained image description models can be seen here:
+    </div>
+    <table>
+      <tr>
+        <th><div style="font-size:125%;">Architecture</th>
+        <th><div style="font-size:125%;">CNN</th>
+        <th><div style="font-size:125%;">Initialization</th>
+        <th><div style="font-size:125%;">Greedy</th>
+        <th><div style="font-size:125%;">Beam = 3</th>
+      </tr>
+
+      <tr>
+        <td><div style="color:#008000;">LSTM (embed: 256)</td>
+        <td><div style="color:#008000;">Resnet152</td>
+        <td><div style="color:#008000;">Random</td>
+        <td><div style="color:#008000;">0.123</td>
+        <td><div style="color:#008000;">0.132</td>
+      </tr>
+
+      <tr>
+        <td>GRU (embed: 256)</td>
+        <td>Resnet152</td>
+        <td>Random</td>
+        <td>0.122</td>
+        <td>0.131</td>
+      </tr>
+
+      <tr>
+        <td>LSTM (embed: 256)</td>
+        <td>VGG16</td>
+        <td>Random</td>
+        <td>0.108</td>
+        <td>0.117</td>
+      </tr>
+    </table>
+
+    <br>
+
+    <div style="text-align:left;">
+      The BLEU-4 scores for the various trained video description models can be seen here:
+    </div>
+
+    <table>
+      <tr>
+        <th><div style="font-size:125%;">Architecture</th>
+        <th><div style="font-size:125%;">CNN</th>
+        <th><div style="font-size:125%;">Initialization</th>
+        <th><div style="font-size:125%;">Greedy</th>
+        <th><div style="font-size:125%;">Beam = 3</th>
+      </tr>
+
+      <tr>
+        <td><div style="color:#008000;">GRU (embed: 256)</td>
+        <td><div style="color:#008000;">Resnet152</td>
+        <td><div style="color:#008000;">Random</td>
+        <td><div style="color:#008000;">0.317</td>
+        <td><div style="color:#008000;">0.351</td>
+      </tr>
+
+      <tr>
+        <td>LSTM (embed: 256)</td>
+        <td>Resnet152</td>
+        <td>Random</td>
+        <td>0.305</td>
+        <td>0.320</td>
+      </tr>
+
+      <tr>
+        <td>LSTM (embed: 256)</td>
+        <td>VGG16</td>
+        <td>Random</td>
+        <td>0.283</td>
+        <td>0.318</td>
+      </tr>
+    </table>
+
+    <h3 style="text-align:left;">More Information</h3>
+    <div style="text-align:left;">
+      More information, including the source code for the backend and front end, can be found on <a href="https://www.github.com/sanjifr3/narrator.git">github</a>.
+    </div>
 </div>
 </body>
 

@@ -276,6 +276,16 @@ def scenes():
     return render_template('scenes.html', page='scenes', scenes_dict=SCENE_SAMPLES_DICT,
                            title=app.config['TITLE'])
 
+@app.route('/contact')
+def contact():
+    """Render contact me page."""
+    return render_template('contact.html', page='contact', title=app.config['TITLE'])
+
+@app.route('/about')
+def about():
+    """Render about page."""
+    return render_template('about.html', page='about', title=app.config['TITLE'])
+
 
 @app.route('/demo', methods=['GET', 'POST'])
 def demo():

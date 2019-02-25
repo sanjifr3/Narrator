@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, help='Base CNN encoding model',
                         default='resnet152')
     parser.add_argument('--dir', type=str,
-                        help='Directory containing videos to encode',
+                        help='Directory containing images to encode',
                         default=os.environ['HOME'] + '/Database/coco/images/')
     parser.add_argument('--continue_preprocessing', type=bool,
                         help='Continue preprocessing or start from scratch',
