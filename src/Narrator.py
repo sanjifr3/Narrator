@@ -119,7 +119,11 @@ class Narrator(object):
             end_id=self.coco_vocab.word2idx[self.coco_vocab.end_word]
         )
 
-        ic_checkpoint = torch.load(root_path + ic_model_path)
+        if torch.cuda.is_available():
+          ic_checkpoint = torch.load(root_path + ic_model_path)
+        else:
+          ic_checkpoint = torch.load(root_path + ic_model_path, map_location='cpu')
+
         self.image_captioner.load_state_dict(ic_checkpoint['params'])
 
         # Create video captioner and load weights
@@ -133,7 +137,10 @@ class Narrator(object):
             end_id=self.msrvtt_vocab.word2idx[self.msrvtt_vocab.end_word]
         )
 
-        vc_checkpoint = torch.load(root_path + vc_model_path)
+        if torch.cuda.is_available():
+          vc_checkpoint = torch.load(root_path + vc_model_path)
+        else:
+          vc_checkpoint = torch.load(root_path + vc_model_path, map_location='cpu')
         self.video_captioner.load_state_dict(vc_checkpoint['params'])
 
         # Construct TTS
