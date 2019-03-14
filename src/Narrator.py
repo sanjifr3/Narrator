@@ -306,8 +306,12 @@ class Narrator(object):
                 return "ERROR: File doesn't exist"
 
         # transform, convert to tensor and encode
-        im = self.transformer(im).cuda().unsqueeze(0)
-        im = self.encoder(im)
+        im = self.transformer(im)
+
+        if torch.cuda.is_available():
+          im = im.cuda()
+
+        im = self.encoder(im.unsqueeze(0))
 
         # Make prediction with modified tensor
         caption = self.image_captioner.predict(im, beam_size=beam_size)[
