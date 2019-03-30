@@ -2,9 +2,9 @@
 ### A scene description generator.
 ====================================================
 
-This library and service was created with the intention of helping content creators get AI generated auditory descriptions of scenes and images that they can use to make their content more accessible for people with vision impairment.
+This API and service was created with the intention of helping content creators get AI generated auditory descriptions of scenes and images that they can use to make their content more accessible for people with vision impairment.
 
-The Narrator library generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video.
+The Narrator API generates audio descriptions for provided images and videos using two CNN-RNN neural networks developed in PyTorch: 1) an image to text description network based on the show-and-tell network, and 2) an extension of this network into video to text description. The video description network can additionally be used to generate descriptions per scene in a video.
 
 
 The overall arctitecture for Narrator can be seen here:
@@ -18,9 +18,9 @@ The image description model architecture can be seen here:
 The video description model architecture can be seen here:
 ![alt text](samples/video-description-model.png)
 
-The Narrator is currently served in two ways: 1) a Flask web app currently being hosted on AWS and served via a [website](http://sraj.ca), and 2) a standalone library: Narrator.py. Examples of usage of the website can be seen on the website, and examples of using the library can be seen in notebooks/Narrator Usage Examples.ipynb.
+The Narrator is currently served in two ways: 1) a Flask web app currently being hosted on AWS and served via a [website](http://sraj.ca), and 2) a standalone API: Narrator.py. Examples of usage of the website can be seen on the website, and examples of using the API can be seen in notebooks/Narrator Usage Examples.ipynb.
 
-The Narrator library uses [Amazon Polly](https://aws.amazon.com/polly/) to generate audio descriptions from text, and [PySceneDetect](https://pyscenedetect.readthedocs.io/en/latest/) for detecting scene changes within a video.
+The Narrator API uses [Amazon Polly](https://aws.amazon.com/polly/) to generate audio descriptions from text, and [PySceneDetect](https://pyscenedetect.readthedocs.io/en/latest/) for detecting scene changes within a video.
 
 The image description network is trained using the COCO 2014 dataset.
 
