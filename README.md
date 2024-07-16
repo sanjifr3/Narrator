@@ -27,9 +27,9 @@ The image description network is trained using the COCO 2014 dataset.
 The video description network is trained using the MSR-VTT dataset.
 
 ### Pre-trained Models
-The current best pre-trained image description model can be downloaded from [here](https://drive.google.com/open?id=1bBaGTNBv3WsAYV-cGLIQeYw1C2EEZ3Sj).
+The current best pre-trained image description model can be downloaded from [here](https://1drv.ms/u/s!Aiw1YvL2I-AYtdVcnNXOj9UjFRBaQQ?e=kiqozG).
 
-The current best pre-trained video description model can be downloaded from [here](https://drive.google.com/open?id=1-B2LKqYS6Z1ecWLmqxpUDo8ZztiWFtOo).
+The current best pre-trained video description model can be downloaded from [here](https://1drv.ms/u/s!Aiw1YvL2I-AYtdVZpZP9CFOdWQBn0A?e=x62rh4).
 
 Place these models in the models directory.
 
